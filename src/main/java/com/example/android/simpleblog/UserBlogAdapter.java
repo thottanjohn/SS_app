@@ -13,6 +13,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -45,6 +46,7 @@ public class UserBlogAdapter extends RecyclerView.Adapter<UserBlogAdapter.ViewHo
     private FirebaseFirestore firebaseFirestore;
     private FirebaseAuth firebaseAuth;
 
+
     public UserBlogAdapter(List<BlogPost> blog_list,List<Users> user_list){
 
         this.blog_list = blog_list;
@@ -59,6 +61,7 @@ public class UserBlogAdapter extends RecyclerView.Adapter<UserBlogAdapter.ViewHo
         context = parent.getContext();
         firebaseFirestore = FirebaseFirestore.getInstance();
         firebaseAuth = FirebaseAuth.getInstance();
+
         return new ViewHolder(view);
     }
 
@@ -96,7 +99,31 @@ public class UserBlogAdapter extends RecyclerView.Adapter<UserBlogAdapter.ViewHo
                 holder.delete_btn.setVisibility(View.INVISIBLE);
 
             }
+            firebaseFirestore.collection("GreenVibesPosts/" + blogPostId + "/Likes").addSnapshotListener(new EventListener<QuerySnapshot>() {
+                @Override
+                public void onEvent(QuerySnapshot documentSnapshots, FirebaseFirestoreException e) {
+                    try{
+                        if (!documentSnapshots.isEmpty()) {
 
+                            int count = documentSnapshots.size();
+
+                            holder.updateLikesCount(count);
+
+
+
+                        } else {
+
+                            holder.updateLikesCount(0);
+
+
+                        }
+
+                    }   catch (Exception e2){
+                        Toast.makeText(context, e2.getMessage(), Toast.LENGTH_LONG).show();
+
+                    }
+                }
+            });
 
             //User Data will be retrieved here...
 
@@ -149,11 +176,12 @@ public class UserBlogAdapter extends RecyclerView.Adapter<UserBlogAdapter.ViewHo
             holder.delete_btn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-
+                    holder.delete_progress_bar.setVisibility(View.VISIBLE);
                     firebaseFirestore.collection("GreenVibesPosts").document(blogPostId).delete().addOnSuccessListener(new OnSuccessListener<Void>() {
                         @Override
                         public void onSuccess(Void aVoid) {
                             blog_list.remove(position);
+                            holder.delete_progress_bar.setVisibility(View.GONE);
 
                         }
                     });
@@ -188,6 +216,7 @@ public class UserBlogAdapter extends RecyclerView.Adapter<UserBlogAdapter.ViewHo
 
         private Button delete_btn;
 
+        private ProgressBar delete_progress_bar;
 
         public ViewHolder(View itemView) {
             super(itemView);
@@ -195,6 +224,7 @@ public class UserBlogAdapter extends RecyclerView.Adapter<UserBlogAdapter.ViewHo
 
             blogCommentBtn = mView.findViewById(R.id.blog_comment_icon);
             delete_btn =mView.findViewById(R.id.delete_btn);
+            delete_progress_bar=mView.findViewById(R.id.delete_progress);
 
         }
 
@@ -256,7 +286,14 @@ public class UserBlogAdapter extends RecyclerView.Adapter<UserBlogAdapter.ViewHo
             blogLikeCount.setText(counts + " Comments");
 
         }
+        public void updateLikesCount(int count){
 
+            blogLikeCount = mView.findViewById(R.id.blog_like_count);
+            blogLikeCount.setText(count + " Likes");
+
+        }
     }
+
+
 
 }

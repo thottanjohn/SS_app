@@ -44,7 +44,7 @@ public class CommentsRecyclerAdapter extends RecyclerView.Adapter<CommentsRecycl
         holder.setIsRecyclable(false);
 
         String commentMessage = commentsList.get(position).getMessage();
-        String username = commentsList.get(position).getUsername();
+        String username = commentsList.get(position).getUser_name();
         String image = commentsList.get(position).getUser_image();
         String time_stamp =commentsList.get(position).getTimestamp();
         holder.setUserData(username, image,time_stamp);

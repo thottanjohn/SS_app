@@ -182,8 +182,12 @@ public class MainActivity extends AppCompatActivity {
                             // Highlight the selected item has been done by NavigationView
                             menuItem.setChecked(true);
                             // Set action bar title
-                            setTitle(menuItem.getTitle());
 
+                            if(menuItem.getTitle().equals("My Profile")){
+
+                            }else {
+                                setTitle(menuItem.getTitle());
+                            }
                             // set item as selected to persist highlight
 
                             // close drawer when item is tapped

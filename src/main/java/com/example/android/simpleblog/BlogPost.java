@@ -75,7 +75,7 @@ public class BlogPost extends BlogPostId {
         String dateString = null;
         try {
             long millisecond = timestamp.getTime();
-            dateString = DateFormat.format("MM/dd/yyyy", new Date(millisecond)).toString();
+            dateString = DateFormat.format("dd/MM/yyyy", new Date(millisecond)).toString();
 
         } catch (Exception e) {
 

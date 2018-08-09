@@ -6,7 +6,7 @@ import java.util.Date;
 
 public class Comments {
 
-    private String message, user_id,username,userimage;
+    private String message, user_id,user_name,user_image;
     private Date timestamp;
 
     public Comments(){
@@ -15,12 +15,12 @@ public class Comments {
 
 
 
-    public Comments(String message, String user_id, Date timestamp, String username, String userimage) {
+    public Comments(String message, String user_id, Date timestamp, String user_name, String user_image) {
         this.message = message;
         this.user_id = user_id;
         this.timestamp = timestamp;
-        this.username =username;
-        this.userimage =userimage;
+        this.user_name =user_name;
+        this.user_image =user_image;
 
 
     }
@@ -59,18 +59,18 @@ public class Comments {
         this.timestamp = timestamp;
     }
 
-    public String getUsername() {
-        return username;
+    public String getUser_name() {
+        return user_name;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
+    public void setUser_name(String user_name) {
+        this.user_name = user_name;
     }
 
     public String getUser_image() {
-        return userimage;
+        return user_image;
     }
     public void setUser_image(String user_image) {
-        this.userimage = userimage;
+        this.user_image = user_image;
     }
 }

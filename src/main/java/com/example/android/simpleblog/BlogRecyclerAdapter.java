@@ -135,7 +135,10 @@ public class BlogRecyclerAdapter extends RecyclerView.Adapter<BlogRecyclerAdapte
 
                                 }
                             }catch (Exception e1){
-                                    Toast.makeText(context, e1.getMessage(), Toast.LENGTH_LONG).show();}
+                                  //  Toast.makeText(context, e1.getMessage(), Toast.LENGTH_LONG).show();
+
+
+                                }
 
 
                         }
@@ -165,7 +168,7 @@ public class BlogRecyclerAdapter extends RecyclerView.Adapter<BlogRecyclerAdapte
                     }
 
                 }   catch (Exception e2){
-                        Toast.makeText(context, e2.getMessage(), Toast.LENGTH_LONG).show();
+                       // Toast.makeText(context, e2.getMessage(), Toast.LENGTH_LONG).show();
 
                     }
             }
@@ -192,8 +195,8 @@ try {
 
     }
 }catch (Exception e1){
-    Toast.makeText(context, e1.getMessage(), Toast.LENGTH_LONG).show();
 
+//Toast.makeText(context, e2.getMessage(), Toast.LENGTH_LONG).show();
 
 }
 

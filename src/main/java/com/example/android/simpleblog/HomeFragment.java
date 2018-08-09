@@ -135,6 +135,8 @@ public class HomeFragment extends Fragment {
                     Query secondQuery = firebaseFirestore.collection("GreenVibesPosts").whereGreaterThanOrEqualTo("user_name",search);
 
 
+
+
                     secondQuery.addSnapshotListener(getActivity(), new EventListener<QuerySnapshot>() {
                         @Override
                         public void onEvent(QuerySnapshot documentSnapshots, FirebaseFirestoreException e) {

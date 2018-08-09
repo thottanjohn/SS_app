@@ -76,7 +76,7 @@ public class CommentsActivity extends AppCompatActivity {
         comment_list.setAdapter(commentsRecyclerAdapter);
 
 
-        firebaseFirestore.collection("Posts/" + blog_post_id + "/Comments").orderBy("timestamp", Query.Direction.DESCENDING)
+        firebaseFirestore.collection("GreenVibesPosts/" + blog_post_id + "/Comments").orderBy("timestamp", Query.Direction.DESCENDING)
                 .addSnapshotListener(CommentsActivity.this, new EventListener<QuerySnapshot>() {
             @Override
             public void onEvent(QuerySnapshot documentSnapshots, FirebaseFirestoreException e) {
