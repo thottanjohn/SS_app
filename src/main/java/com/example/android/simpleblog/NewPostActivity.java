@@ -59,7 +59,7 @@ public class NewPostActivity extends AppCompatActivity {
     private FirebaseAuth firebaseAuth;
 
     private String current_user_id;
-
+    private String event_name;
     private Bitmap compressedImageFile;
 
     @Override
@@ -82,7 +82,7 @@ public class NewPostActivity extends AppCompatActivity {
         newPostDesc = findViewById(R.id.new_post_desc);
         newPostBtn = findViewById(R.id.post_btn);
         newPostProgress = findViewById(R.id.mprogress);
-
+        event_name = getIntent().getStringExtra("event_name");
         newPostImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -133,7 +133,7 @@ public class NewPostActivity extends AppCompatActivity {
 
                     // PHOTO UPLOAD
 
-                    UploadTask filePath = storageReference.child("post_images").child(randomName + ".jpg").putBytes(imageData);
+                    UploadTask filePath = storageReference.child(event_name+"post_images").child(randomName + ".jpg").putBytes(imageData);
                     filePath.addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
                         @Override
                         public void onComplete(@NonNull final Task<UploadTask.TaskSnapshot> task) {
@@ -159,7 +159,7 @@ public class NewPostActivity extends AppCompatActivity {
                                 compressedImageFile.compress(Bitmap.CompressFormat.JPEG, 100, baos);
                                 byte[] thumbData = baos.toByteArray();
 
-                                UploadTask uploadTask = storageReference.child("post_images/thumbs")
+                                UploadTask uploadTask = storageReference.child(event_name+"post_images/thumbs")
                                         .child(randomName + ".jpg").putBytes(thumbData);
 
                                 uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
@@ -187,7 +187,8 @@ public class NewPostActivity extends AppCompatActivity {
                                                     postMap.put("likes",0);
                                                     postMap.put("user_name",username);
                                                     postMap.put("user_image",userimage);
-                                                    firebaseFirestore.collection("GreenVibesPosts").add(postMap).addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
+                                                    postMap.put("event_name",event_name);
+                                                    firebaseFirestore.collection(event_name+"Posts").add(postMap).addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
                                                         @Override
                                                         public void onComplete(@NonNull Task<DocumentReference> task) {
 

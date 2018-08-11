@@ -53,15 +53,16 @@ public class BlogRecyclerAdapter extends RecyclerView.Adapter<BlogRecyclerAdapte
     private FirebaseAuth firebaseAuth;
     public int likes;
 
-    public BlogRecyclerAdapter(List<BlogPost> blog_list,List<Users> user_list){
+    BlogRecyclerAdapter(List<BlogPost> blog_list, List<Users> user_list){
 
         this.blog_list = blog_list;
     this.user_list = user_list;
 
     }
 
+    @NonNull
     @Override
-    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
 
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.blog_list_item, parent, false);
         context = parent.getContext();
@@ -71,7 +72,7 @@ public class BlogRecyclerAdapter extends RecyclerView.Adapter<BlogRecyclerAdapte
     }
 
     @Override
-    public void onBindViewHolder(final ViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull final ViewHolder holder, int position) {
 
         if (firebaseAuth.getCurrentUser() != null) {
 
@@ -93,7 +94,7 @@ public class BlogRecyclerAdapter extends RecyclerView.Adapter<BlogRecyclerAdapte
 
             String username = blog_list.get(position).getUser_name();
             String image = blog_list.get(position).getUser_image();
-
+        final String event_name =blog_list.get(position).getEvent_name();
        holder.setUserData(username, image,userid);
 
         holder.setBlogImage(image_url, thumbUri);
@@ -120,7 +121,7 @@ public class BlogRecyclerAdapter extends RecyclerView.Adapter<BlogRecyclerAdapte
         //Get Likes Count
 
 
-                firebaseFirestore.collection("GreenVibesPosts/" + blogPostId + "/Comments")
+                firebaseFirestore.collection(event_name+"Posts/" + blogPostId + "/Comments")
                         .addSnapshotListener(new EventListener<QuerySnapshot>() {
                             @Override
                             public void onEvent(QuerySnapshot documentSnapshots, FirebaseFirestoreException e) {
@@ -148,7 +149,7 @@ public class BlogRecyclerAdapter extends RecyclerView.Adapter<BlogRecyclerAdapte
 
 
 
-                firebaseFirestore.collection("GreenVibesPosts/" + blogPostId + "/Likes").addSnapshotListener(new EventListener<QuerySnapshot>() {
+                firebaseFirestore.collection(event_name+"sPosts/" + blogPostId + "/Likes").addSnapshotListener(new EventListener<QuerySnapshot>() {
                 @Override
                 public void onEvent(QuerySnapshot documentSnapshots, FirebaseFirestoreException e) {
                     try{
@@ -157,13 +158,13 @@ public class BlogRecyclerAdapter extends RecyclerView.Adapter<BlogRecyclerAdapte
                         int count = documentSnapshots.size();
 
                         holder.updateLikesCount(count);
-                        holder.updatedata(count,blogPostId);
+                        holder.updatedata(count,blogPostId,event_name);
 
 
                     } else {
 
                         holder.updateLikesCount(0);
-                        holder.updatedata(0,blogPostId);
+                        holder.updatedata(0,blogPostId,event_name);
 
                     }
 
@@ -179,7 +180,7 @@ public class BlogRecyclerAdapter extends RecyclerView.Adapter<BlogRecyclerAdapte
 
 
             //Get Likes
-            firebaseFirestore.collection("GreenVibesPosts/" + blogPostId + "/Likes").document(currentUserId).addSnapshotListener(new EventListener<DocumentSnapshot>() {
+            firebaseFirestore.collection(event_name+"Posts/" + blogPostId + "/Likes").document(currentUserId).addSnapshotListener(new EventListener<DocumentSnapshot>() {
                 @TargetApi(Build.VERSION_CODES.LOLLIPOP)
                 @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
                 @Override
@@ -208,7 +209,7 @@ try {
                 @Override
                 public void onClick(View v) {
 
-                    firebaseFirestore.collection("GreenVibesPosts/" + blogPostId + "/Likes").document(currentUserId).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    firebaseFirestore.collection(event_name+"Posts/" + blogPostId + "/Likes").document(currentUserId).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                         @Override
                         public void onComplete(@NonNull Task<DocumentSnapshot> task) {
 
@@ -236,6 +237,7 @@ try {
 
                     Intent commentIntent = new Intent(context, CommentsActivity.class);
                     commentIntent.putExtra("blog_post_id", blogPostId);
+                    commentIntent.putExtra("event_name", event_name);
                     context.startActivity(commentIntent);
 
                 }
@@ -267,7 +269,7 @@ try {
         private ImageView blogCommentBtn;
 
 
-        public ViewHolder(View itemView) {
+        ViewHolder(View itemView) {
             super(itemView);
             mView = itemView;
 
@@ -276,14 +278,14 @@ try {
 
         }
 
-        public void setDescText(String descText){
+        void setDescText(String descText){
 
             descView = mView.findViewById(R.id.blog_desc);
             descView.setText(descText);
 
         }
 
-        public void setBlogImage(String downloadUri, String thumbUri){
+        void setBlogImage(String downloadUri, String thumbUri){
 
             blogImageView = mView.findViewById(R.id.blog_image);
 
@@ -303,7 +305,7 @@ try {
 
         }
 
-       public void setUserData(String name, String image, final String userid){
+       void setUserData(String name, String image, final String userid){
 
             blogUserImage = mView.findViewById(R.id.blog_user_image);
             blogUserName = mView.findViewById(R.id.blog_user_name);
@@ -330,17 +332,18 @@ try {
         public void updateLikesCount(int count){
 
             blogLikeCount = mView.findViewById(R.id.blog_like_count);
-            blogLikeCount.setText(count + " Likes");
+            String k=count + " Likes";
+            blogLikeCount.setText(k);
 
         }
         public void updateCommentCount(int counts){
-
+            String k=counts + " Comments";
             blogLikeCount = mView.findViewById(R.id.blog_comment_count);
-            blogLikeCount.setText(counts + " Comments");
+            blogLikeCount.setText(k);
 
         }
-       private void updatedata(int count,String blogPostId) {
-            DocumentReference docref=  firebaseFirestore.collection("GreenVibesPosts").document(blogPostId);
+       private void updatedata(int count,String blogPostId,String event_name) {
+            DocumentReference docref=  firebaseFirestore.collection(event_name+"Posts").document(blogPostId);
             docref.update("likes",count).addOnSuccessListener(new OnSuccessListener<Void>() {
                 @Override
                 public void onSuccess(Void aVoid) {

@@ -35,20 +35,22 @@ public class PostFragment extends Fragment {
     private RecyclerView blog_list_view;
     private List<BlogPost> blog_list;
     private List<Users> user_list;
+    private ArrayList<String> event_list;
 
     private FirebaseFirestore firebaseFirestore;
     private FirebaseAuth firebaseAuth;
     private UserBlogAdapter userBlogAdapter;
 
 
-    private  String blog_user_id;
+    private String blog_user_id;
+
     public PostFragment() {
         // Required empty public constructor
     }
 
 
     @Override
-    public View onCreateView(LayoutInflater inflater, final ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, final ViewGroup container,
                              Bundle savedInstanceState) {
 
         View view = inflater.inflate(R.layout.fragment_post, container, false);
@@ -56,6 +58,7 @@ public class PostFragment extends Fragment {
         blog_list = new ArrayList<>();
         user_list = new ArrayList<>();
         blog_list_view = view.findViewById(R.id.user_blog_list_view);
+        event_list = new ArrayList<>();
 
         firebaseAuth = FirebaseAuth.getInstance();
 
@@ -70,60 +73,79 @@ public class PostFragment extends Fragment {
 
 
             if (getArguments() != null) {
-            blog_user_id = getArguments().getString("blog_user_id");
+                blog_user_id = getArguments().getString("blog_user_id");
 
-        }
-
+            }
 
 
             firebaseFirestore = FirebaseFirestore.getInstance();
-
-            Query firstQuery = firebaseFirestore.collection("GreenVibesPosts").whereEqualTo("user_id", blog_user_id);
-
-
-          firstQuery.addSnapshotListener(getActivity(), new EventListener<QuerySnapshot>() {
+            firebaseFirestore.collection("Events").addSnapshotListener(getActivity(), new EventListener<QuerySnapshot>() {
                 @Override
                 public void onEvent(QuerySnapshot documentSnapshots, FirebaseFirestoreException e) {
                     if (!documentSnapshots.isEmpty()) {
                         for (DocumentChange doc : documentSnapshots.getDocumentChanges()) {
+                            String eventname = doc.getDocument().getString("event_name");
 
-                            if (doc.getType() == DocumentChange.Type.ADDED  ) {
+                            event_list.add(eventname);
 
-                                String blogPostId = doc.getDocument().getId();
-                                final BlogPost blogPost = doc.getDocument().toObject(BlogPost.class).withId(blogPostId);
+                        }
 
-                                blog_list.add(blogPost);
+                        for (String i : event_list) {
 
-                               userBlogAdapter.notifyDataSetChanged();
-
+                            Query firstQuery = firebaseFirestore.collection(i + "Posts").whereEqualTo("user_id", blog_user_id);
 
 
-                            }else if(doc.getType() == DocumentChange.Type.MODIFIED ){
-                                String blogPostId = doc.getDocument().getId();
-                                final BlogPost blogPost = doc.getDocument().toObject(BlogPost.class).withId(blogPostId);
+                            firstQuery.addSnapshotListener(getActivity(), new EventListener<QuerySnapshot>() {
+                                @Override
+                                public void onEvent(QuerySnapshot documentSnapshots, FirebaseFirestoreException e) {
+                                    if (!documentSnapshots.isEmpty()) {
+                                        for (DocumentChange doc : documentSnapshots.getDocumentChanges()) {
 
-                                blog_list.remove(blogPost);
-                                blog_list.add(blogPost);
-                                userBlogAdapter.notifyDataSetChanged();
+                                            if (doc.getType() == DocumentChange.Type.ADDED) {
 
-                            }else if(doc.getType() == DocumentChange.Type.REMOVED){
-                                String blogPostId = doc.getDocument().getId();
-                                final BlogPost blogPost = doc.getDocument().toObject(BlogPost.class).withId(blogPostId);
+                                                String blogPostId = doc.getDocument().getId();
+                                                final BlogPost blogPost = doc.getDocument().toObject(BlogPost.class).withId(blogPostId);
 
-                                blog_list.remove(blogPost);
-                                userBlogAdapter.notifyDataSetChanged();
+                                                blog_list.add(blogPost);
 
-                            }
+                                                userBlogAdapter.notifyDataSetChanged();
+
+
+                                            } else if (doc.getType() == DocumentChange.Type.MODIFIED) {
+                                                String blogPostId = doc.getDocument().getId();
+                                                final BlogPost blogPost = doc.getDocument().toObject(BlogPost.class).withId(blogPostId);
+
+                                                blog_list.remove(blogPost);
+                                                blog_list.add(blogPost);
+                                                userBlogAdapter.notifyDataSetChanged();
+
+                                            } else if (doc.getType() == DocumentChange.Type.REMOVED) {
+                                                String blogPostId = doc.getDocument().getId();
+                                                final BlogPost blogPost = doc.getDocument().toObject(BlogPost.class).withId(blogPostId);
+
+                                                blog_list.remove(blogPost);
+                                                userBlogAdapter.notifyDataSetChanged();
+
+                                            }
+
+                                        }
+                                    }
+                                }
+                            });
+
 
                         }
                     }
+
                 }
             });
 
-        }
 
-        // Inflate the layout for this fragment
+
+
+            // Inflate the layout for this fragment
+
+        }
         return view;
     }
-
 }

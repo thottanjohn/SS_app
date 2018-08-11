@@ -39,7 +39,7 @@ import de.hdodenhof.circleimageview.CircleImageView;
 
 public class UserBlogAdapter extends RecyclerView.Adapter<UserBlogAdapter.ViewHolder> {
 
-    public List<BlogPost> blog_list;
+    private List<BlogPost> blog_list;
     private List<Users> user_list;
     public Context context;
 
@@ -47,15 +47,16 @@ public class UserBlogAdapter extends RecyclerView.Adapter<UserBlogAdapter.ViewHo
     private FirebaseAuth firebaseAuth;
 
 
-    public UserBlogAdapter(List<BlogPost> blog_list,List<Users> user_list){
+    UserBlogAdapter(List<BlogPost> blog_list, List<Users> user_list){
 
         this.blog_list = blog_list;
         this.user_list = user_list;
 
     }
 
+    @NonNull
     @Override
-    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
 
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.user_blog_list, parent, false);
         context = parent.getContext();
@@ -66,7 +67,7 @@ public class UserBlogAdapter extends RecyclerView.Adapter<UserBlogAdapter.ViewHo
     }
 
     @Override
-    public void onBindViewHolder(final ViewHolder holder, final int position) {
+    public void onBindViewHolder(@NonNull final ViewHolder holder, final int position) {
 
         if (firebaseAuth.getCurrentUser() != null) {
 
@@ -85,6 +86,7 @@ public class UserBlogAdapter extends RecyclerView.Adapter<UserBlogAdapter.ViewHo
 
             String username = blog_list.get(position).getUser_name();
             String image = blog_list.get(position).getUser_image();
+            final String event_name = blog_list.get(position).getEvent_name();
 
             holder.setUserData(username, image,userid);
             holder.setBlogImage(image_url, thumbUri);
@@ -99,7 +101,7 @@ public class UserBlogAdapter extends RecyclerView.Adapter<UserBlogAdapter.ViewHo
                 holder.delete_btn.setVisibility(View.INVISIBLE);
 
             }
-            firebaseFirestore.collection("GreenVibesPosts/" + blogPostId + "/Likes").addSnapshotListener(new EventListener<QuerySnapshot>() {
+            firebaseFirestore.collection(event_name+"Posts/" + blogPostId + "/Likes").addSnapshotListener(new EventListener<QuerySnapshot>() {
                 @Override
                 public void onEvent(QuerySnapshot documentSnapshots, FirebaseFirestoreException e) {
                     try{
@@ -139,7 +141,7 @@ public class UserBlogAdapter extends RecyclerView.Adapter<UserBlogAdapter.ViewHo
             }
 
             //Get Likes Count
-            firebaseFirestore.collection("GreenVibesPosts/" + blogPostId + "/Comments")
+            firebaseFirestore.collection(event_name+"Posts/" + blogPostId + "/Comments")
                     .addSnapshotListener( new EventListener<QuerySnapshot>() {
                         @Override
                         public void onEvent(QuerySnapshot documentSnapshots, FirebaseFirestoreException e) {
@@ -168,20 +170,22 @@ public class UserBlogAdapter extends RecyclerView.Adapter<UserBlogAdapter.ViewHo
 
                     Intent commentIntent = new Intent(context, CommentsActivity.class);
                     commentIntent.putExtra("blog_post_id", blogPostId);
+                    commentIntent.putExtra("event_name", event_name);
                     context.startActivity(commentIntent);
 
                 }
             });
+            holder.delete_progress_bar.setVisibility(ProgressBar.INVISIBLE);
 
             holder.delete_btn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    holder.delete_progress_bar.setVisibility(View.VISIBLE);
-                    firebaseFirestore.collection("GreenVibesPosts").document(blogPostId).delete().addOnSuccessListener(new OnSuccessListener<Void>() {
+                    holder.delete_progress_bar.setVisibility(ProgressBar.VISIBLE);
+                    firebaseFirestore.collection(event_name+"Posts").document(blogPostId).delete().addOnSuccessListener(new OnSuccessListener<Void>() {
                         @Override
                         public void onSuccess(Void aVoid) {
                             blog_list.remove(position);
-                            holder.delete_progress_bar.setVisibility(View.GONE);
+                            holder.delete_progress_bar.setVisibility(ProgressBar.INVISIBLE);
 
                         }
                     });
@@ -218,7 +222,7 @@ public class UserBlogAdapter extends RecyclerView.Adapter<UserBlogAdapter.ViewHo
 
         private ProgressBar delete_progress_bar;
 
-        public ViewHolder(View itemView) {
+        ViewHolder(View itemView) {
             super(itemView);
             mView = itemView;
 
@@ -228,14 +232,14 @@ public class UserBlogAdapter extends RecyclerView.Adapter<UserBlogAdapter.ViewHo
 
         }
 
-        public void setDescText(String descText){
+        void setDescText(String descText){
 
             descView = mView.findViewById(R.id.blog_desc);
             descView.setText(descText);
 
         }
 
-        public void setBlogImage(String downloadUri, String thumbUri){
+        void setBlogImage(String downloadUri, String thumbUri){
 
             blogImageView = mView.findViewById(R.id.blog_image);
 
@@ -255,7 +259,7 @@ public class UserBlogAdapter extends RecyclerView.Adapter<UserBlogAdapter.ViewHo
 
         }
 
-        public void setUserData(String name, String image, final String userid){
+        void setUserData(String name, String image, final String userid){
 
             blogUserImage = mView.findViewById(R.id.blog_user_image);
             blogUserName = mView.findViewById(R.id.blog_user_name);
@@ -282,14 +286,16 @@ public class UserBlogAdapter extends RecyclerView.Adapter<UserBlogAdapter.ViewHo
 
         public void updateCommentCount(int counts){
 
-            blogLikeCount = mView.findViewById(R.id.blog_comment_count);
-            blogLikeCount.setText(counts + " Comments");
+            blogLikeCount = mView.<TextView>findViewById(R.id.blog_comment_count);
+            String k=counts + " Comments";
+            blogLikeCount.setText(k);
 
         }
         public void updateLikesCount(int count){
 
             blogLikeCount = mView.findViewById(R.id.blog_like_count);
-            blogLikeCount.setText(count + " Likes");
+            String k=count + " Comments";
+            blogLikeCount.setText(k);
 
         }
     }

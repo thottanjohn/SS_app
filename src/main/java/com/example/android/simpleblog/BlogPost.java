@@ -18,15 +18,15 @@ import java.util.Date;
 public class BlogPost extends BlogPostId {
 
     private FirebaseFirestore firebaseFirestore;
-    public String user_id, image_url, desc, image_thumb,user_name,user_image;
-    public Date timestamp;
-    int likes;
+    private String event_name,user_id, image_url, desc, image_thumb,user_name,user_image;
+    private Date timestamp;
+    private int likes;
 
     public BlogPost() {}
 
 
 
-    public BlogPost(String user_id, String image_url, String desc, String image_thumb, Date timestamp, int likes, String user_name, String user_image) {
+    public BlogPost(String user_id, String image_url, String desc, String image_thumb, Date timestamp, int likes, String user_name, String user_image, String event_name) {
         this.user_id = user_id;
         this.image_url = image_url;
         this.desc = desc;
@@ -34,6 +34,7 @@ public class BlogPost extends BlogPostId {
         this.timestamp = timestamp;
         this.likes=likes;
         this.user_name = user_name;
+        this.event_name=event_name;
 
         this.user_image = user_image;
 
@@ -104,6 +105,13 @@ public class BlogPost extends BlogPostId {
         this.timestamp = timestamp;
     }
 
+    public String getEvent_name() {
+        return event_name;
+    }
+
+    public void setEvent_name(String event_name) {
+        this.event_name = event_name;
+    }
 
 
 }

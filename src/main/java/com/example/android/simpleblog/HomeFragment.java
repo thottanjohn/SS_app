@@ -1,26 +1,18 @@
 package com.example.android.simpleblog;
 
 
-import android.content.Context;
-import android.graphics.Point;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
-import android.view.Display;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.PopupWindow;
 import android.widget.Toast;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -52,7 +44,7 @@ public class HomeFragment extends Fragment {
 
     private Button search_btn;
     private EditText search_text;
-    private String search;
+    private String search,event_name;
     private List<String> myList = new ArrayList<>();
 
     public HomeFragment() {
@@ -61,7 +53,7 @@ public class HomeFragment extends Fragment {
 
 
     @Override
-    public View onCreateView(LayoutInflater inflater, final ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, final ViewGroup container,
                              Bundle savedInstanceState) {
 
         View view = inflater.inflate(R.layout.fragment_home, container, false);
@@ -80,13 +72,20 @@ public class HomeFragment extends Fragment {
         blog_list_view.setAdapter(blogRecyclerAdapter);
         blog_list_view.setHasFixedSize(true);
 
+
         if (firebaseAuth.getCurrentUser() != null) {
+
+            if (getArguments() != null) {
+                event_name = getArguments().getString("current_event_name");
+
+            }
+
 
 
             firebaseFirestore = FirebaseFirestore.getInstance();
 
 
-            Query firstQuery = firebaseFirestore.collection("GreenVibesPosts").orderBy("timestamp", Query.Direction.DESCENDING);
+            Query firstQuery = firebaseFirestore.collection(event_name+"Posts").orderBy("timestamp", Query.Direction.DESCENDING);
             firstQuery.addSnapshotListener(getActivity(), new EventListener<QuerySnapshot>() {
                 @Override
                 public void onEvent(QuerySnapshot documentSnapshots, FirebaseFirestoreException e) {
@@ -132,7 +131,7 @@ public class HomeFragment extends Fragment {
 
                     blog_list.clear();
                     search = search_text.getText().toString();
-                    Query secondQuery = firebaseFirestore.collection("GreenVibesPosts").whereGreaterThanOrEqualTo("user_name",search);
+                    Query secondQuery = firebaseFirestore.collection(event_name+"Posts").whereGreaterThanOrEqualTo("user_name",search);
 
 
 

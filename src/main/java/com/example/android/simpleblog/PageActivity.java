@@ -27,7 +27,7 @@ public class PageActivity extends AppCompatActivity {
     private FirebaseAuth mAuth;
     private FirebaseFirestore firebaseFirestore;
 
-    private String current_user_id;
+    private String current_user_id,event_name;
 
     private FloatingActionButton addPostBtn;
 
@@ -52,16 +52,23 @@ public class PageActivity extends AppCompatActivity {
 
         getSupportActionBar().setTitle("Photo Blog");
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-
+        event_name = getIntent().getStringExtra("event_name");
         if(mAuth.getCurrentUser() != null) {
 
             mainbottomNav = findViewById(R.id.mainBottomNav);
 
+            Bundle bundle = new Bundle();
+            bundle.putString("current_event_name", event_name);
             // FRAGMENTS
+
             homeFragment = new HomeFragment();
             LeaderboardFragment =new LeaderboardFragment();
 
+
             initializeFragment();
+            LeaderboardFragment.setArguments(bundle);
+                homeFragment.setArguments(bundle);
+
 
             mainbottomNav.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
                 @Override
@@ -99,6 +106,7 @@ public class PageActivity extends AppCompatActivity {
                 public void onClick(View v) {
 
                     Intent newPostIntent = new Intent(PageActivity.this, NewPostActivity.class);
+                    newPostIntent.putExtra("event_name",event_name);
                     startActivity(newPostIntent);
 
                 }

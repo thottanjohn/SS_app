@@ -46,7 +46,8 @@ public class CommentsActivity extends AppCompatActivity {
     private List<Users> user_list;
 
     private String blog_post_id;
-    private String current_user_id;
+    private String current_user_id,event_name;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,6 +63,7 @@ public class CommentsActivity extends AppCompatActivity {
 
         current_user_id = firebaseAuth.getCurrentUser().getUid();
         blog_post_id = getIntent().getStringExtra("blog_post_id");
+        event_name = getIntent().getStringExtra("event_name");
 
         comment_field = findViewById(R.id.comment_field);
         comment_post_btn = findViewById(R.id.comment_post_btn);

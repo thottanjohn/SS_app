@@ -39,7 +39,7 @@ import de.hdodenhof.circleimageview.CircleImageView;
 
 public class LeaderboardRecyclerAdapter extends RecyclerView.Adapter<LeaderboardRecyclerAdapter.ViewHolder> {
 
-    public List<BlogPost> blog_list;
+    private List<BlogPost> blog_list;
     private List<Users> user_list;
     public Context context;
     public  int place=1;
@@ -47,25 +47,27 @@ public class LeaderboardRecyclerAdapter extends RecyclerView.Adapter<Leaderboard
     private FirebaseFirestore firebaseFirestore;
     private FirebaseAuth firebaseAuth;
 
-    public LeaderboardRecyclerAdapter(List<BlogPost> blog_list,List<Users> user_list){
+    LeaderboardRecyclerAdapter(List<BlogPost> blog_list, List<Users> user_list){
 
         this.blog_list = blog_list;
         this.user_list = user_list;
 
     }
 
+    @NonNull
     @Override
-    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
 
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.leaderboard_list_item, parent, false);
         context = parent.getContext();
         firebaseFirestore = FirebaseFirestore.getInstance();
         firebaseAuth = FirebaseAuth.getInstance();
+
         return new ViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(final ViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull final ViewHolder holder, int position) {
 
         if (firebaseAuth.getCurrentUser() != null) {
 
@@ -74,7 +76,7 @@ public class LeaderboardRecyclerAdapter extends RecyclerView.Adapter<Leaderboard
             final String blogPostId = blog_list.get(position).BlogPostId;
 
 
-
+            final String event_name =blog_list.get(position).getEvent_name();
 
             String image_url = blog_list.get(position).getImage_url();
             String thumbUri = blog_list.get(position).getImage_thumb();
@@ -100,7 +102,7 @@ public class LeaderboardRecyclerAdapter extends RecyclerView.Adapter<Leaderboard
 
             //Get Likes Count
 
-    firebaseFirestore.collection("GreenVibesPosts/" + blogPostId + "/Likes").addSnapshotListener(new EventListener<QuerySnapshot>() {
+    firebaseFirestore.collection(event_name+"Posts/" + blogPostId + "/Likes").addSnapshotListener(new EventListener<QuerySnapshot>() {
                 @Override
                 public void onEvent(QuerySnapshot documentSnapshots, FirebaseFirestoreException e) {
 
@@ -152,7 +154,7 @@ public class LeaderboardRecyclerAdapter extends RecyclerView.Adapter<Leaderboard
 
 
 
-        public ViewHolder(View itemView) {
+        ViewHolder(View itemView) {
             super(itemView);
             mView = itemView;
 
@@ -161,7 +163,7 @@ public class LeaderboardRecyclerAdapter extends RecyclerView.Adapter<Leaderboard
 
 
 
-        public void setBlogImage(String downloadUri, String thumbUri){
+        void setBlogImage(String downloadUri, String thumbUri){
 
             blogImageView = mView.findViewById(R.id.blog_image);
 
@@ -177,7 +179,7 @@ public class LeaderboardRecyclerAdapter extends RecyclerView.Adapter<Leaderboard
 
 
 
-        public void setUserData(String name, final String userid){
+        void setUserData(String name, final String userid){
 
 
             blogUserName = mView.findViewById(R.id.user_name);
@@ -199,7 +201,7 @@ public class LeaderboardRecyclerAdapter extends RecyclerView.Adapter<Leaderboard
         }
 
 
-        public void setplace(int position){
+        void setplace(int position){
 
             blogPlacecount= mView.findViewById(R.id.place);
             blogPlaceimage= mView.findViewById(R.id.place_image);
@@ -208,20 +210,24 @@ public class LeaderboardRecyclerAdapter extends RecyclerView.Adapter<Leaderboard
 
             switch (position){
                 case 0:
-                    blogPlacecount.setText(  position+1 + "st place " );
+                    String k;
+                    k = position+1 + "st place ";
+                    blogPlacecount.setText( k );
                     blogPlaceimage.setImageResource(R.drawable.gold_crown_android);
                     break;
                 case 1:
-                    blogPlacecount.setText( position+1 + "nd place " );
+                    String i = position+1 + "nd place ";
+                    blogPlacecount.setText( i);
                     blogPlaceimage.setImageResource(R.drawable.silver_crown_android);
                     break;
                 case 2:
-
-                    blogPlacecount.setText(  position+1+  "rd place " );
+                    String j = position+1 + "rd place ";
+                    blogPlacecount.setText( j );
                     blogPlaceimage.setImageResource(R.drawable.bronze_crown_android);
                     break;
                 default:
-                    blogPlacecount.setText(  position+1+  "th place " );
+                    String l = position+1 + "th place ";
+                    blogPlacecount.setText( l );
 
             }
 
