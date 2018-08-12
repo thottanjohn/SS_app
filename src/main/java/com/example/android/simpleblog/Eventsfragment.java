@@ -76,7 +76,7 @@ public class Eventsfragment extends Fragment {
             firebaseFirestore = FirebaseFirestore.getInstance();
 
 
-            Query firstQuery = firebaseFirestore.collection("Events").orderBy("start_date", Query.Direction.DESCENDING);
+            Query firstQuery = firebaseFirestore.collection("Events").orderBy("start_date");
             firstQuery.addSnapshotListener(getActivity(), new EventListener<QuerySnapshot>() {
                 @Override
                 public void onEvent(QuerySnapshot documentSnapshots, FirebaseFirestoreException e) {
