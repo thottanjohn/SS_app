@@ -110,6 +110,7 @@ public class NewPostActivity extends AppCompatActivity {
 
 
                     newPostProgress.setVisibility(View.VISIBLE);
+                    newPostProgress.setClickable(false);
 
                     final String randomName = UUID.randomUUID().toString();
 
@@ -205,7 +206,7 @@ public class NewPostActivity extends AppCompatActivity {
                                                             }
 
                                                             newPostProgress.setVisibility(View.INVISIBLE);
-
+                                                            newPostProgress.setClickable(true);
                                                         }
                                                     });
                                                 } else {

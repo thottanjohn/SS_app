@@ -20,6 +20,7 @@ import android.widget.Toast;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
@@ -181,15 +182,24 @@ public class UserBlogAdapter extends RecyclerView.Adapter<UserBlogAdapter.ViewHo
                 @Override
                 public void onClick(View view) {
                     holder.delete_progress_bar.setVisibility(ProgressBar.VISIBLE);
-                    firebaseFirestore.collection(event_name+"Posts").document(blogPostId).delete().addOnSuccessListener(new OnSuccessListener<Void>() {
-                        @Override
-                        public void onSuccess(Void aVoid) {
-                            blog_list.remove(position);
-                            holder.delete_progress_bar.setVisibility(ProgressBar.INVISIBLE);
+                    try {
+                        firebaseFirestore.collection(event_name + "Posts").document(blogPostId).delete().addOnSuccessListener(new OnSuccessListener<Void>() {
+                            @Override
+                            public void onSuccess(Void aVoid) {
+                                blog_list.remove(position);
+                                holder.delete_progress_bar.setVisibility(ProgressBar.INVISIBLE);
 
-                        }
-                    });
+                            }
+                        }).addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
 
+                            }
+                        });
+                    }catch (Exception e1){
+
+                        Toast.makeText(context, "Error : " + e1.getMessage(), Toast.LENGTH_LONG).show();
+                    }
                 }
             });
 

@@ -22,6 +22,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
+import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
@@ -40,10 +41,11 @@ public class MainActivity extends AppCompatActivity {
     public Runnable refresh;
     private DrawerLayout mDrawerLayout;
 
+    FirebaseAuth.AuthStateListener mAuthListener;
 
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         handler = new Handler();
@@ -64,14 +66,17 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-        if (mAuth.getCurrentUser() == null) {
+     if(mAuth.getCurrentUser() == null ){
 
-            sendToLogin();
-
-        } else {
-
-            current_user_id = mAuth.getCurrentUser().getUid();
-
+         sendToLogin();
+                }
+         else {
+try {
+    current_user_id = mAuth.getCurrentUser().getUid();
+}
+catch (Exception e){
+    sendToLogin();
+}
             firebaseFirestore.collection("Users").document(current_user_id).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                 @Override
                 public void onComplete(@NonNull Task<DocumentSnapshot> task) {
@@ -207,22 +212,12 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-        refresh = new Runnable() {
-            public void run() {
-                // Do something
-                handler.postDelayed(refresh, 5000);
-            }
-        };
-        handler.post(refresh);
 
 
         //FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
 
 
-    }
+
 
 
 
