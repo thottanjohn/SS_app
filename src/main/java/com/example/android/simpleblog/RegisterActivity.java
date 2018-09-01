@@ -19,6 +19,11 @@ import com.google.firebase.auth.ActionCodeSettings;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.iid.FirebaseInstanceId;
+
+import java.util.HashMap;
 
 public class RegisterActivity extends AppCompatActivity {
 
@@ -28,6 +33,7 @@ public class RegisterActivity extends AppCompatActivity {
     private Button reg_btn;
     private Button reg_login_btn;
     private ProgressBar reg_progress;
+    private DatabaseReference mDatabase;
 
     private FirebaseAuth mAuth;
 
@@ -88,10 +94,32 @@ public class RegisterActivity extends AppCompatActivity {
                             public void onComplete(@NonNull Task<AuthResult> task) {
 
                                 if(task.isSuccessful()){
+                                    FirebaseUser current_user = FirebaseAuth.getInstance().getCurrentUser();
+                                    String uid = current_user.getUid();
 
-                                    Intent setupIntent = new Intent(RegisterActivity.this, SetupActivity.class);
-                                    startActivity(setupIntent);
-                                    finish();
+                                    mDatabase = FirebaseDatabase.getInstance().getReference().child("Users").child(uid);
+
+                                    final String device_token = FirebaseInstanceId.getInstance().getToken();
+
+                                    HashMap<String, String> userMap = new HashMap<>();
+
+
+                                    userMap.put("device_token", device_token);
+
+                                    mDatabase.setValue(userMap).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                        @Override
+                                        public void onComplete(@NonNull Task<Void> task) {
+
+                                            if(task.isSuccessful()){
+                                                Toast.makeText(RegisterActivity.this,"DeviceTken="+device_token+mDatabase.child("Users").child("uid").getKey(),Toast.LENGTH_LONG).show();
+                                                Intent setupIntent = new Intent(RegisterActivity.this, SetupActivity.class);
+                                                startActivity(setupIntent);
+                                                finish();
+
+                                            }
+
+                                        }
+                                    });
 
                                 } else {
 

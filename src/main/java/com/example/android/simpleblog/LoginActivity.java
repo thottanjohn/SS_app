@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
@@ -28,6 +29,13 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.iid.FirebaseInstanceId;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -41,7 +49,8 @@ public class LoginActivity extends AppCompatActivity {
     private static final String TAG = "Main Activity";
     private  static final int RC_SIGN_IN=1;
     private FirebaseAuth.AuthStateListener mAuthListener;
-
+private DatabaseReference mDatabase;
+private  String DisplayName;
     private ProgressBar loginProgress;
 
     @Override
@@ -107,14 +116,31 @@ public class LoginActivity extends AppCompatActivity {
 
                 if(!TextUtils.isEmpty(loginEmail) && !TextUtils.isEmpty(loginPass)){
                     loginProgress.setVisibility(View.VISIBLE);
-
+                    getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
+                            WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
                     mAuth.signInWithEmailAndPassword(loginEmail, loginPass).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
                         @Override
                         public void onComplete(@NonNull Task<AuthResult> task) {
 
                             if(task.isSuccessful()){
+/*
+                                FirebaseUser current_user = FirebaseAuth.getInstance().getCurrentUser();
+                                String uid = current_user.getUid();
 
-                                sendToMain();
+                                mDatabase = FirebaseDatabase.getInstance().getReference("Users/" + uid +"/devicetoken");
+
+                                final String device_token = FirebaseInstanceId.getInstance().getToken();
+
+
+                                mDatabase.setValue(device_token);
+
+
+
+                                Toast.makeText(LoginActivity.this,"mDatabase="+FirebaseDatabase.getInstance().getReference().setValue("Hello"),Toast.LENGTH_LONG).show();
+
+                                */
+                            sendToMain();
+
 
                             } else {
 
@@ -125,7 +151,7 @@ public class LoginActivity extends AppCompatActivity {
                             }
 
                             loginProgress.setVisibility(View.INVISIBLE);
-
+                            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
                         }
                     });
 
@@ -153,8 +179,35 @@ public class LoginActivity extends AppCompatActivity {
             Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
             try {
                 // Google Sign In was successful, authenticate with Firebase
-                GoogleSignInAccount account = task.getResult(ApiException.class);
-                firebaseAuthWithGoogle(account);
+                final GoogleSignInAccount account = task.getResult(ApiException.class);
+                FirebaseUser current_user = FirebaseAuth.getInstance().getCurrentUser();
+                String uid = current_user.getUid();
+
+                mDatabase = FirebaseDatabase.getInstance().getReference().child("Users").child(uid);
+
+                String device_token = FirebaseInstanceId.getInstance().getToken();
+
+                HashMap<String, String> userMap = new HashMap<>();
+
+
+                userMap.put("device_token", device_token);
+
+                mDatabase.setValue(userMap).addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+
+                        if(task.isSuccessful()){
+
+                            firebaseAuthWithGoogle(account);
+
+                        }
+
+                    }
+                });
+
+
+
+
             } catch (ApiException e) {
                 // Google Sign In failed, update UI appropriately
                 Log.w(TAG, "Google sign in failed", e);

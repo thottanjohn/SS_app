@@ -83,8 +83,13 @@ public class NewAccountActivity extends AppCompatActivity   {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         firebaseAuth = FirebaseAuth.getInstance();
-        user_id = getIntent().getStringExtra("userid");
+        try {
+            user_id = getIntent().getStringExtra("userid");
+        }
+        catch (Exception e){
+            sendToLogin();
 
+        }
 
 
         mainsideNav = findViewById(R.id.mainsideNav);
@@ -203,7 +208,13 @@ public class NewAccountActivity extends AppCompatActivity   {
 
 
 
+    private void sendToLogin() {
 
+        Intent loginIntent = new Intent(NewAccountActivity.this, LoginActivity.class);
+        startActivity(loginIntent);
+        finish();
+
+    }
 
 }
 

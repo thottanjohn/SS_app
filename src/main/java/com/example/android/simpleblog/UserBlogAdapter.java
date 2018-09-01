@@ -11,6 +11,8 @@ import android.text.format.DateFormat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
@@ -61,6 +63,7 @@ public class UserBlogAdapter extends RecyclerView.Adapter<UserBlogAdapter.ViewHo
 
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.user_blog_list, parent, false);
         context = parent.getContext();
+
         firebaseFirestore = FirebaseFirestore.getInstance();
         firebaseAuth = FirebaseAuth.getInstance();
 
@@ -182,12 +185,18 @@ public class UserBlogAdapter extends RecyclerView.Adapter<UserBlogAdapter.ViewHo
                 @Override
                 public void onClick(View view) {
                     holder.delete_progress_bar.setVisibility(ProgressBar.VISIBLE);
+
+
                     try {
                         firebaseFirestore.collection(event_name + "Posts").document(blogPostId).delete().addOnSuccessListener(new OnSuccessListener<Void>() {
                             @Override
                             public void onSuccess(Void aVoid) {
                                 blog_list.remove(position);
                                 holder.delete_progress_bar.setVisibility(ProgressBar.INVISIBLE);
+                                Intent commentIntent = new Intent(context, NewAccountActivity.class);
+                                commentIntent.putExtra("userid", userid);
+
+                                context.startActivity(commentIntent);
 
                             }
                         }).addOnFailureListener(new OnFailureListener() {

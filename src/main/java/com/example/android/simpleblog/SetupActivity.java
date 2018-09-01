@@ -14,6 +14,7 @@ import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
@@ -26,6 +27,8 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -69,6 +72,7 @@ public class SetupActivity extends AppCompatActivity {
     private StorageReference storageReference;
     private FirebaseAuth firebaseAuth;
     private FirebaseFirestore firebaseFirestore;
+    private DatabaseReference mDatabase;
 
     private Bitmap compressedImageFile;
 
@@ -154,7 +158,8 @@ public class SetupActivity extends AppCompatActivity {
                     if (!TextUtils.isEmpty(user_name) && mainImageURI != null) {
 
                         setupProgress.setVisibility(View.VISIBLE);
-
+                        getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
+                                WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
                         if (isChanged) {
 
                             user_id = firebaseAuth.getCurrentUser().getUid();
@@ -194,7 +199,7 @@ public class SetupActivity extends AppCompatActivity {
                                         Toast.makeText(SetupActivity.this, "(IMAGE Error) : " + error, Toast.LENGTH_LONG).show();
 
                                         setupProgress.setVisibility(View.INVISIBLE);
-
+                                        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
                                     }
                                 }
                             });
@@ -260,6 +265,8 @@ public class SetupActivity extends AppCompatActivity {
 
         }
 
+
+
      /*   File newThumbFile = new File(download_uri.getPath());
         try {
 
@@ -302,52 +309,55 @@ public class SetupActivity extends AppCompatActivity {
                 Map<String, String> userMap = new HashMap<>();
                 userMap.put("name", user_name);
                 userMap.put("image", download_uri.toString());
-        Query firstQuery = firebaseFirestore.collection("GreenVibesPosts").whereEqualTo("user_id",user_id);
+
+                try {
+                    Query firstQuery = firebaseFirestore.collection("GreenVibesPosts").whereEqualTo("user_id", user_id);
 
 
-        firstQuery.addSnapshotListener(SetupActivity.this, new EventListener<QuerySnapshot>() {
-            @Override
-            public void onEvent(QuerySnapshot documentSnapshots, FirebaseFirestoreException e) {
-                if (!documentSnapshots.isEmpty()) {
-                    for (DocumentChange doc : documentSnapshots.getDocumentChanges()) {
-                        String blogPostId = doc.getDocument().getId();
-                        DocumentReference docref=  firebaseFirestore.collection("GreenVibesPosts").document(blogPostId);
-                        docref.update("user_name",user_name).addOnSuccessListener(new OnSuccessListener<Void>() {
-                            @Override
-                            public void onSuccess(Void aVoid) {
+                    firstQuery.addSnapshotListener(SetupActivity.this, new EventListener<QuerySnapshot>() {
+                        @Override
+                        public void onEvent(QuerySnapshot documentSnapshots, FirebaseFirestoreException e) {
+                            if (!documentSnapshots.isEmpty()) {
+                                for (DocumentChange doc : documentSnapshots.getDocumentChanges()) {
+                                    String blogPostId = doc.getDocument().getId();
+                                    DocumentReference docref = firebaseFirestore.collection("GreenVibesPosts").document(blogPostId);
+                                    docref.update("user_name", user_name).addOnSuccessListener(new OnSuccessListener<Void>() {
+                                        @Override
+                                        public void onSuccess(Void aVoid) {
 
 
+                                        }
+                                    })
+                                            .addOnFailureListener(new OnFailureListener() {
+                                                @Override
+                                                public void onFailure(@NonNull Exception e) {
+
+                                                }
+                                            });
+                                    docref.update("user_image", download_uri.toString()).addOnSuccessListener(new OnSuccessListener<Void>() {
+                                        @Override
+                                        public void onSuccess(Void aVoid) {
+
+
+                                        }
+                                    })
+                                            .addOnFailureListener(new OnFailureListener() {
+                                                @Override
+                                                public void onFailure(@NonNull Exception e) {
+
+                                                }
+                                            });
+
+
+                                }
                             }
-                        })
-                                .addOnFailureListener(new OnFailureListener() {
-                                    @Override
-                                    public void onFailure(@NonNull Exception e) {
+                        }
+                    });
 
-                                    }
-                                });
-                        docref.update("user_image",download_uri.toString()).addOnSuccessListener(new OnSuccessListener<Void>() {
-                            @Override
-                            public void onSuccess(Void aVoid) {
+                }catch (Exception e){
 
 
-                            }
-                        })
-                                .addOnFailureListener(new OnFailureListener() {
-                                    @Override
-                                    public void onFailure(@NonNull Exception e) {
-
-                                    }
-                                });
-
-
-
-
-                    }
                 }
-            }
-        });
-
-
 
                 firebaseFirestore.collection("Users").document(user_id).set(userMap).addOnCompleteListener(new OnCompleteListener<Void>() {
                     @Override

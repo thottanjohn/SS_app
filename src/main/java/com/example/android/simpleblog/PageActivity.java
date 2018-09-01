@@ -34,6 +34,7 @@ public class PageActivity extends AppCompatActivity {
     private BottomNavigationView mainbottomNav;
 
     private HomeFragment homeFragment;
+    private boolean over;
     private LeaderboardFragment LeaderboardFragment;
 
 
@@ -41,7 +42,6 @@ public class PageActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_page);
-
 
 
         mAuth = FirebaseAuth.getInstance();
@@ -53,68 +53,74 @@ public class PageActivity extends AppCompatActivity {
         getSupportActionBar().setTitle("Photo Blog");
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         event_name = getIntent().getStringExtra("event_name");
-        if(mAuth.getCurrentUser() != null) {
+        over = getIntent().getBooleanExtra("over",false);
+        if (over) {
+            Intent newIntent = new Intent(PageActivity.this, MainActivity.class);
 
-            mainbottomNav = findViewById(R.id.mainBottomNav);
+            startActivity(newIntent);
+        } else {
+            if (mAuth.getCurrentUser() != null) {
 
-            Bundle bundle = new Bundle();
-            bundle.putString("current_event_name", event_name);
-            // FRAGMENTS
+                mainbottomNav = findViewById(R.id.mainBottomNav);
 
-            homeFragment = new HomeFragment();
-            LeaderboardFragment =new LeaderboardFragment();
+                Bundle bundle = new Bundle();
+                bundle.putString("current_event_name", event_name);
+                // FRAGMENTS
+
+                homeFragment = new HomeFragment();
+                LeaderboardFragment = new LeaderboardFragment();
 
 
-            initializeFragment();
-            LeaderboardFragment.setArguments(bundle);
+                initializeFragment();
+                LeaderboardFragment.setArguments(bundle);
                 homeFragment.setArguments(bundle);
 
 
-            mainbottomNav.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
-                @Override
-                public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                mainbottomNav.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
+                    @Override
+                    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
 
-                    Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.main_container);
+                        Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.main_container);
 
-                    switch (item.getItemId()) {
+                        switch (item.getItemId()) {
 
-                        case R.id.bottom_action_home:
+                            case R.id.bottom_action_home:
 
-                            replaceFragment(homeFragment, currentFragment);
-                            return true;
+                                replaceFragment(homeFragment, currentFragment);
+                                return true;
 
 
+                            case R.id.bottom_action_leaderboard:
 
-                        case R.id.bottom_action_leaderboard:
+                                replaceFragment(LeaderboardFragment, currentFragment);
+                                return true;
 
-                            replaceFragment(LeaderboardFragment, currentFragment);
-                            return true;
+                            default:
+                                return false;
 
-                        default:
-                            return false;
 
+                        }
 
                     }
-
-                }
-            });
+                });
 
 
-            addPostBtn = findViewById(R.id.add_post_btn);
-            addPostBtn.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
+                addPostBtn = findViewById(R.id.add_post_btn);
+                addPostBtn.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
 
-                    Intent newPostIntent = new Intent(PageActivity.this, NewPostActivity.class);
-                    newPostIntent.putExtra("event_name",event_name);
-                    startActivity(newPostIntent);
+                        Intent newPostIntent = new Intent(PageActivity.this, NewPostActivity.class);
+                        newPostIntent.putExtra("event_name", event_name);
+                        startActivity(newPostIntent);
 
-                }
-            });
+                    }
+                });
+
+            }
+
 
         }
-
-
     }
     @Override
     public boolean onSupportNavigateUp(){

@@ -149,7 +149,7 @@ public class BlogRecyclerAdapter extends RecyclerView.Adapter<BlogRecyclerAdapte
 
 
 
-                firebaseFirestore.collection(event_name+"sPosts/" + blogPostId + "/Likes").addSnapshotListener(new EventListener<QuerySnapshot>() {
+                firebaseFirestore.collection(event_name+"Posts/" + blogPostId + "/Likes").addSnapshotListener(new EventListener<QuerySnapshot>() {
                 @Override
                 public void onEvent(QuerySnapshot documentSnapshots, FirebaseFirestoreException e) {
                     try{
@@ -218,11 +218,11 @@ try {
                                 Map<String, Object> likesMap = new HashMap<>();
                                 likesMap.put("timestamp", FieldValue.serverTimestamp());
 
-                                firebaseFirestore.collection("GreenVibesPosts/" + blogPostId + "/Likes").document(currentUserId).set(likesMap);
+                                firebaseFirestore.collection(event_name+"Posts/" + blogPostId + "/Likes").document(currentUserId).set(likesMap);
 
                             } else {
 
-                                firebaseFirestore.collection("GreenVibesPosts/" + blogPostId + "/Likes").document(currentUserId).delete();
+                                firebaseFirestore.collection(event_name+"Posts/" + blogPostId + "/Likes").document(currentUserId).delete();
 
                             }
 

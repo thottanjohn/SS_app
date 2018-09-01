@@ -14,18 +14,25 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -36,6 +43,7 @@ public class EventsRecyclerAdapter extends RecyclerView.Adapter<EventsRecyclerAd
     private FirebaseFirestore firebaseFirestore;
     private FirebaseAuth firebaseAuth;
     private Context context;
+    private ArrayList<String> Rules;
 
     EventsRecyclerAdapter(List<Events> events_list){
 
@@ -66,7 +74,10 @@ public class EventsRecyclerAdapter extends RecyclerView.Adapter<EventsRecyclerAd
             holder.event_enter_btn.setVisibility(View.GONE);
             holder.event_explore_btn.setEnabled(false);
             holder.event_explore_btn.setVisibility(View.GONE);
+            holder.rules_spinner.setVisibility(View.GONE);
+            holder.rules.setVisibility(View.GONE);
             final String eventId = events_list.get(position).EventId;
+            Rules =events_list.get(position).getRules();
             final String currentUserId = firebaseAuth.getCurrentUser().getUid();
 
 
@@ -79,46 +90,59 @@ public class EventsRecyclerAdapter extends RecyclerView.Adapter<EventsRecyclerAd
             Date start_date = events_list.get(position).getStart_date();
             Date end_date = events_list.get(position).getEnd_date();
             Date current_date =new Date(System.currentTimeMillis());
-
+            final boolean over = events_list.get(position).isOver();
             long dif =start_date.getTime() - current_date.getTime();
             if(dif<=0) {
                 holder.event_enter_btn.setEnabled(true);
                 holder.event_enter_btn.setVisibility(View.VISIBLE);
                 holder.event_explore_btn.setVisibility(View.VISIBLE);
                 holder.event_explore_btn.setEnabled(true);
+                holder.rules_spinner.setVisibility(View.VISIBLE);
+                holder.rules.setVisibility(View.VISIBLE);
                 holder.initUI();
                 Date currentdate =new Date(System.currentTimeMillis());
-                holder.countDownDayStart(end_date.getTime()-currentdate.getTime());
+                long time =end_date.getTime()-currentdate.getTime();
+                if (time<0){
+                    holder.setevent("Contest has ended");
+                    holder.updatedata( eventId);
 
-                holder.event_enter_btn.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                    Intent intent = new Intent(context, NewPostActivity.class);
-                    intent.putExtra("event_name", event_name);
-                    context.startActivity(intent);
                 }
-            });
-                holder.event_explore_btn.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        Intent intent = new Intent(context, PageActivity.class);
-                        intent.putExtra("event_name", event_name);
-                        context.startActivity(intent);
-                    }
-                });
+                else {
+                    holder.countDownDayStart(end_date.getTime() - currentdate.getTime());
 
+                    holder.event_enter_btn.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            Intent intent = new Intent(context, NewPostActivity.class);
+                            intent.putExtra("event_name", event_name);
 
-
-
-
+                            intent.putExtra("over", over);
+                            context.startActivity(intent);
+                        }
+                    });
+                    holder.event_explore_btn.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            Intent intent = new Intent(context, PageActivity.class);
+                            intent.putExtra("event_name", event_name);
+                            intent.putExtra("over", over);
+                            context.startActivity(intent);
+                        }
+                    });
 
                 holder.setevent(event_name);
                 holder.seteventimage(event_image);
+                holder.setRules(Rules);
+
+
+                }
             }else{
                 holder.event_enter_btn.setEnabled(false);
                 holder.event_enter_btn.setVisibility(View.GONE);
                 holder.event_explore_btn.setEnabled(false);
                 holder.event_explore_btn.setVisibility(View.GONE);
+                holder.rules_spinner.setVisibility(View.GONE);
+                holder.rules.setVisibility(View.GONE);
                 holder.initUI();
 
                 long st_time =current_date.getTime();
@@ -155,13 +179,11 @@ public class EventsRecyclerAdapter extends RecyclerView.Adapter<EventsRecyclerAd
         private TextView event_name;
         private ImageView event_image;
         private ConstraintLayout cardview;
+        private TextView rules_spinner;
 
-        private String EVENT_DATE_TIME = "2018-12-31 10:30:00";
-        private String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
 
-        private TextView tv_days, tv_hour, tv_minute, tv_second;
-        private Handler handler = new Handler();
-        private Runnable runnable;
+        private TextView tv_days, tv_hour, tv_minute, tv_second,rules;
+
 
 
         ViewHolder(View itemView) {
@@ -169,8 +191,9 @@ public class EventsRecyclerAdapter extends RecyclerView.Adapter<EventsRecyclerAd
             mView = itemView;
             event_enter_btn =mView.findViewById(R.id.event_btn_enter);
             event_explore_btn =mView.findViewById(R.id.event_btn_explore);
-    cardview=mView.findViewById(R.id.cardView);
-
+            cardview=mView.findViewById(R.id.cardView);
+            rules_spinner =mView.findViewById(R.id.rules_spinner);
+            rules =mView.findViewById(R.id.Rules);
         }
 
         void setevent(String eventname) {
@@ -226,7 +249,10 @@ public class EventsRecyclerAdapter extends RecyclerView.Adapter<EventsRecyclerAd
                 }
 
                 public void onFinish() {
-cardview.setVisibility(View.GONE);
+                cardview.setVisibility(View.GONE);
+
+
+
                 }
             }.start();
 
@@ -236,6 +262,34 @@ cardview.setVisibility(View.GONE);
 
 
         public void countDownDayStart(long l) {
+
+        cardview.setVisibility(View.GONE);
+        }
+
+        public void setRules(ArrayList<String> rules) {
+        StringBuilder builder  =new StringBuilder();
+            rules_spinner.setLines(rules.size());
+        for(String i: rules){
+            builder.append("=>"+i+"\n");
+        }
+       rules_spinner.setText(builder);
+        }
+
+        private void updatedata(String  eventId) {
+            DocumentReference docref=  firebaseFirestore.collection("Events").document( eventId);
+            docref.update("over",true).addOnSuccessListener(new OnSuccessListener<Void>() {
+                @Override
+                public void onSuccess(Void aVoid) {
+
+
+                }
+            })
+                    .addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+
+                        }
+                    });
 
 
         }

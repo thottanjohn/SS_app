@@ -12,6 +12,7 @@ import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentChange;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
@@ -37,6 +38,8 @@ public class LeaderboardFragment extends Fragment {
     private FirebaseAuth firebaseAuth;
     private LeaderboardRecyclerAdapter LeaderboardRecyclerAdapter;
     private String event_name;
+    private DocumentSnapshot lastVisible;
+    private Boolean isFirstPageFirstLoad = true;
 
 
     public LeaderboardFragment() {
@@ -80,11 +83,32 @@ public class LeaderboardFragment extends Fragment {
 
                 firebaseFirestore = FirebaseFirestore.getInstance();
 
-                Query firstQuery = firebaseFirestore.collection( event_name+"Posts").orderBy("likes",Query.Direction.DESCENDING);
+                blog_list_view.addOnScrollListener(new RecyclerView.OnScrollListener() {
+                    @Override
+                    public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                        super.onScrolled(recyclerView, dx, dy);
+
+                        Boolean reachedBottom = !recyclerView.canScrollVertically(1);
+
+                        if (reachedBottom) {
+
+                            loadMorePost();
+
+                        }
+
+                    }
+                });
+                Query firstQuery = firebaseFirestore.collection( event_name+"Posts").orderBy("likes",Query.Direction.DESCENDING).limit(6);
                 firstQuery.addSnapshotListener(getActivity(), new EventListener<QuerySnapshot>() {
                     @Override
                     public void onEvent(QuerySnapshot documentSnapshots, FirebaseFirestoreException e) {
                         if (!documentSnapshots.isEmpty()) {
+                            if (isFirstPageFirstLoad) {
+
+                                lastVisible = documentSnapshots.getDocuments().get(documentSnapshots.size() - 1);
+                                blog_list.clear();
+
+                            }
                             for (DocumentChange doc : documentSnapshots.getDocumentChanges()) {
 
                                 if (doc.getType() == DocumentChange.Type.ADDED  ) {
@@ -92,7 +116,16 @@ public class LeaderboardFragment extends Fragment {
                                     String blogPostId = doc.getDocument().getId();
                                     final BlogPost blogPost = doc.getDocument().toObject(BlogPost.class).withId(blogPostId);
 
-                                    blog_list.add(blogPost);
+                                    if (isFirstPageFirstLoad) {
+
+
+                                        blog_list.add(blogPost);
+
+                                    } else {
+
+                                        blog_list.add(0, blogPost);
+
+                                    }
 
                                     LeaderboardRecyclerAdapter.notifyDataSetChanged();
 
@@ -103,7 +136,17 @@ public class LeaderboardFragment extends Fragment {
                                     final BlogPost blogPost = doc.getDocument().toObject(BlogPost.class).withId(blogPostId);
 
                                     blog_list.remove(blogPost);
-                                    blog_list.add(blogPost);
+
+                                    if (isFirstPageFirstLoad) {
+
+
+                                        blog_list.add(blogPost);
+
+                                    } else {
+
+                                        blog_list.add(0, blogPost);
+
+                                    }
                                     LeaderboardRecyclerAdapter.notifyDataSetChanged();
 
                                 }else if(doc.getType() == DocumentChange.Type.REMOVED){
@@ -124,7 +167,66 @@ public class LeaderboardFragment extends Fragment {
 
             // Inflate the layout for this fragment
             return view;
+
+
+
+
         }
+
+
+    public void loadMorePost() {
+
+
+        Query nextQuery = firebaseFirestore.collection(event_name+"Posts")
+                .orderBy("likes", Query.Direction.DESCENDING)
+                .startAfter(lastVisible)
+                .limit(6);
+
+        nextQuery.addSnapshotListener(getActivity(), new EventListener<QuerySnapshot>() {
+            @Override
+            public void onEvent(QuerySnapshot documentSnapshots, FirebaseFirestoreException e) {
+
+                if (!documentSnapshots.isEmpty()) {
+
+                    lastVisible = documentSnapshots.getDocuments().get(documentSnapshots.size() - 1);
+                    for (DocumentChange doc : documentSnapshots.getDocumentChanges()) {
+
+
+                        if (doc.getType() == DocumentChange.Type.ADDED  ) {
+
+                            String blogPostId = doc.getDocument().getId();
+                            final BlogPost blogPost = doc.getDocument().toObject(BlogPost.class).withId(blogPostId);
+
+                            blog_list.add(blogPost);
+
+                            LeaderboardRecyclerAdapter.notifyDataSetChanged();
+
+
+
+                        }else if(doc.getType() == DocumentChange.Type.MODIFIED ){
+                            String blogPostId = doc.getDocument().getId();
+                            final BlogPost blogPost = doc.getDocument().toObject(BlogPost.class).withId(blogPostId);
+
+                            blog_list.remove(blogPost);
+                            blog_list.add(blogPost);
+                            LeaderboardRecyclerAdapter.notifyDataSetChanged();
+
+                        }else if(doc.getType() == DocumentChange.Type.REMOVED){
+                            String blogPostId = doc.getDocument().getId();
+                            final BlogPost blogPost = doc.getDocument().toObject(BlogPost.class).withId(blogPostId);
+
+                            blog_list.remove(blogPost);
+                            LeaderboardRecyclerAdapter.notifyDataSetChanged();
+
+                        }
+
+                    }
+                }
+
+            }
+        });
+
+    }
 
 
 

@@ -1,21 +1,45 @@
 package com.example.android.simpleblog;
 
+import java.util.ArrayList;
 import java.util.Date;
 
 public class Events extends EventId{
     public String event_name,event_image;
     private Date start_date,end_date;
     private int contestant_count;
-
+    private ArrayList<String> Rules ;
+    private boolean over;
     public Events() {}
 
 
+    public Events(String event_name) {
+        this.event_name = event_name;
+    }
 
-    public Events(String event_name, String event_image, Date start_date, Date end_date, int contestant_count) {
+
+    public ArrayList<String> getRules() {
+        return Rules;
+    }
+
+    public void setRules(ArrayList<String> rules) {
+        Rules = rules;
+    }
+
+    public boolean isOver() {
+        return over;
+    }
+
+    public void setOver(boolean over) {
+        this.over = over;
+    }
+
+    public Events(String event_name, String event_image, Date start_date, Date end_date, int contestant_count, ArrayList<String> Rules, boolean over){
         this.event_name=event_name;
         this.event_image=event_image;
         this.start_date=start_date;
         this.end_date=end_date;
+        this.Rules=Rules;
+
         this.contestant_count=contestant_count;
 
 

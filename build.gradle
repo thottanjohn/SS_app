@@ -33,6 +33,7 @@ dependencies {
     implementation 'com.google.android.gms:play-services-auth:11.8.0'
     implementation 'com.theartofdev.edmodo:android-image-cropper:2.7.+'
     implementation 'com.android.support:design:27.1.1'
+    implementation 'me.relex:circleindicator:1.2.2@aar'
     // Facebook Login only
     //implementation 'com.facebook.android:facebook-login:4.+'
     // Facebook Share only
@@ -44,7 +45,8 @@ dependencies {
     implementation 'com.google.firebase:firebase-firestore:11.8.0'
     implementation 'com.android.support:support-v4:27.1.1'
 
-
+    implementation 'com.squareup.okhttp:okhttp:2.5.0'
+    implementation 'com.google.firebase:firebase-messaging:11.8.0'
     implementation 'id.zelory:compressor:2.1.0'
     annotationProcessor 'com.github.bumptech.glide:compiler:4.7.1'
 
@@ -55,3 +57,5 @@ dependencies {
 }
 
 apply plugin: 'com.google.gms.google-services'
+
+

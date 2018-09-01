@@ -217,10 +217,15 @@ catch (Exception e){
         //FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
 
 
+    @Override
+    protected void onStart() {
+        if( mAuth.getCurrentUser()== null){
 
+            sendToLogin();
 
-
-
+        }
+        super.onStart();
+    }
 
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {

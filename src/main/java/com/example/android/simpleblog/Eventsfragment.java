@@ -1,5 +1,6 @@
 package com.example.android.simpleblog;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
@@ -12,6 +13,7 @@ import android.widget.Button;
 import android.widget.EditText;
 
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
@@ -35,6 +37,7 @@ public class Eventsfragment extends Fragment {
 
     private FirebaseFirestore firebaseFirestore;
     private FirebaseAuth firebaseAuth;
+    private FirebaseUser firebaseAuthUser;
     private EventsRecyclerAdapter EventsRecyclerAdapter;
 
     private DocumentSnapshot lastVisible;
@@ -64,14 +67,16 @@ public class Eventsfragment extends Fragment {
 
 
         firebaseAuth = FirebaseAuth.getInstance();
+        firebaseAuthUser = FirebaseAuth.getInstance().getCurrentUser();
 
         EventsRecyclerAdapter = new EventsRecyclerAdapter(events_list);
         events_list_view.setLayoutManager(new LinearLayoutManager(container.getContext()));
         events_list_view.setAdapter(EventsRecyclerAdapter);
         events_list_view.setHasFixedSize(true);
 
-        if (firebaseAuth.getCurrentUser() != null) {
-
+        if (firebaseAuthUser  == null) {
+            sendToLogin();
+        }else{
 
             firebaseFirestore = FirebaseFirestore.getInstance();
 
@@ -87,27 +92,12 @@ public class Eventsfragment extends Fragment {
 
                                 String event_Id = doc.getDocument().getId();
                                 final Events events = doc.getDocument().toObject(Events.class).withId(event_Id);
+                                boolean over  =doc.getDocument().getBoolean("over");
+                    if(!over){
 
-                                events_list.add(events);
-
-                                EventsRecyclerAdapter.notifyDataSetChanged();
-
-
-                            } else if (doc.getType() == DocumentChange.Type.MODIFIED) {
-                                String event_Id = doc.getDocument().getId();
-                                final Events events = doc.getDocument().toObject(Events.class).withId(event_Id);
-                                events_list.remove(events);
-                                events_list.add(events);
-
-                                EventsRecyclerAdapter.notifyDataSetChanged();
-
-                            } else if (doc.getType() == DocumentChange.Type.REMOVED) {
-                                String event_Id = doc.getDocument().getId();
-                                final Events events = doc.getDocument().toObject(Events.class).withId(event_Id);
-                                events_list.remove(events);
-
-
-                                EventsRecyclerAdapter.notifyDataSetChanged();
+                         events_list.add(events);
+                         EventsRecyclerAdapter.notifyDataSetChanged();
+                                 }
 
                             }
 
@@ -133,6 +123,14 @@ public class Eventsfragment extends Fragment {
             }
         }); */
             return view;
+
+
+    }
+
+    private void sendToLogin() {
+
+        Intent loginIntent = new Intent(getActivity(), LoginActivity.class);
+        startActivity(loginIntent);
 
 
     }
