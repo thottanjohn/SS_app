@@ -34,8 +34,7 @@ public class RandomActivity extends AppCompatActivity {
     private BottomNavigationView mainbottomNav;
 
     private HomeFragment homeFragment;
-    private NotificationFragment notificationFragment;
-    private AccountFragment accountFragment;
+
     public Handler handler;
     public   Runnable refresh;
 
@@ -60,8 +59,6 @@ public class RandomActivity extends AppCompatActivity {
 
             // FRAGMENTS
             homeFragment = new HomeFragment();
-            notificationFragment = new NotificationFragment();
-            accountFragment = new AccountFragment();
 
             initializeFragment();
 
@@ -80,12 +77,11 @@ public class RandomActivity extends AppCompatActivity {
 
                         case R.id.bottom_action_leaderboard:
 
-                            replaceFragment(accountFragment, currentFragment);
                             return true;
 
                         case R.id.bottom_action_posts:
 
-                            replaceFragment(notificationFragment, currentFragment);
+
                             return true;
 
                         default:
@@ -222,27 +218,26 @@ public class RandomActivity extends AppCompatActivity {
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
 
         fragmentTransaction.add(R.id.main_container, homeFragment);
-        fragmentTransaction.add(R.id.main_container, notificationFragment);
+      /*  fragmentTransaction.add(R.id.main_container, notificationFragment);
         fragmentTransaction.add(R.id.main_container, accountFragment);
 
         fragmentTransaction.hide(notificationFragment);
         fragmentTransaction.hide(accountFragment);
 
-        fragmentTransaction.commit();
+        fragmentTransaction.commit(); */
 
     }
 
     private void replaceFragment(Fragment fragment, Fragment currentFragment){
 
-        FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+   /*      FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
         if(fragment == homeFragment){
 
             fragmentTransaction.hide(accountFragment);
-            fragmentTransaction.hide(notificationFragment);
+            fragmentTransaction.hide(notificationFragment);*/
 
         }
-
-        if(fragment == accountFragment){
+/*   if(fragment == accountFragment){
 
             fragmentTransaction.hide(homeFragment);
             fragmentTransaction.hide(notificationFragment);
@@ -260,6 +255,6 @@ public class RandomActivity extends AppCompatActivity {
         //fragmentTransaction.replace(R.id.main_container, fragment);
         fragmentTransaction.commit();
 
-    }
+    } */
 
 }

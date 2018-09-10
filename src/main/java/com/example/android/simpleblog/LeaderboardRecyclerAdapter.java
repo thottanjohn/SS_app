@@ -22,6 +22,7 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
@@ -102,25 +103,27 @@ public class LeaderboardRecyclerAdapter extends RecyclerView.Adapter<Leaderboard
 
             //Get Likes Count
 
-    firebaseFirestore.collection(event_name+"Posts/" + blogPostId + "/Likes").addSnapshotListener(new EventListener<QuerySnapshot>() {
-                @Override
-                public void onEvent(QuerySnapshot documentSnapshots, FirebaseFirestoreException e) {
-
-                    if (!documentSnapshots.isEmpty()) {
-
-                        int count = documentSnapshots.size();
-                        holder.updateLikesCount(count);
+    firebaseFirestore.collection(event_name+"Posts").document(blogPostId).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+        @Override
+        public void onSuccess(DocumentSnapshot documentSnapshot) {
 
 
+            float score = 0;
 
-                    } else {
+            score = documentSnapshot.getLong("likes");
 
-                        holder.updateLikesCount(0);
 
-                    }
+            holder.updateLikesCount(score);
 
-                }
-            });
+
+        }
+
+
+    });
+
+
+
+
 
 
             //Get Likes
@@ -234,7 +237,7 @@ public class LeaderboardRecyclerAdapter extends RecyclerView.Adapter<Leaderboard
 
         }
 
-        public void updateLikesCount(int count){
+        public void updateLikesCount(float count){
 
             blogLikeCount = mView.findViewById(R.id.likes_count);
             blogLikeCount.setText( "Score:"+count );

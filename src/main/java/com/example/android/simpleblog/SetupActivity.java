@@ -37,6 +37,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -47,6 +48,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -73,7 +75,7 @@ public class SetupActivity extends AppCompatActivity {
     private FirebaseAuth firebaseAuth;
     private FirebaseFirestore firebaseFirestore;
     private DatabaseReference mDatabase;
-
+    private ArrayList<String> event_list;
     private Bitmap compressedImageFile;
 
     @Override
@@ -87,6 +89,7 @@ public class SetupActivity extends AppCompatActivity {
 
         firebaseAuth = FirebaseAuth.getInstance();
         user_id = firebaseAuth.getCurrentUser().getUid();
+        event_list = new ArrayList<>();
 
         firebaseFirestore = FirebaseFirestore.getInstance();
         storageReference = FirebaseStorage.getInstance().getReference();
@@ -307,52 +310,71 @@ public class SetupActivity extends AppCompatActivity {
 
 */
                 Map<String, String> userMap = new HashMap<>();
+                final String device_token = FirebaseInstanceId.getInstance().getToken();
                 userMap.put("name", user_name);
                 userMap.put("image", download_uri.toString());
-
+                userMap.put("device_token", device_token);
                 try {
-                    Query firstQuery = firebaseFirestore.collection("GreenVibesPosts").whereEqualTo("user_id", user_id);
 
-
-                    firstQuery.addSnapshotListener(SetupActivity.this, new EventListener<QuerySnapshot>() {
+                    firebaseFirestore.collection("Events").addSnapshotListener(SetupActivity.this, new EventListener<QuerySnapshot>() {
                         @Override
                         public void onEvent(QuerySnapshot documentSnapshots, FirebaseFirestoreException e) {
                             if (!documentSnapshots.isEmpty()) {
                                 for (DocumentChange doc : documentSnapshots.getDocumentChanges()) {
-                                    String blogPostId = doc.getDocument().getId();
-                                    DocumentReference docref = firebaseFirestore.collection("GreenVibesPosts").document(blogPostId);
-                                    docref.update("user_name", user_name).addOnSuccessListener(new OnSuccessListener<Void>() {
+                                    String eventname = doc.getDocument().getString("event_name");
+
+                                    event_list.add(eventname);
+
+                                }
+
+                                for (final String i : event_list) {
+                                    Query firstQuery = firebaseFirestore.collection(i +"Posts").whereEqualTo("user_id", user_id);
+
+
+                                    firstQuery.addSnapshotListener(SetupActivity.this, new EventListener<QuerySnapshot>() {
                                         @Override
-                                        public void onSuccess(Void aVoid) {
+                                        public void onEvent(QuerySnapshot documentSnapshots, FirebaseFirestoreException e) {
+                                            if (!documentSnapshots.isEmpty()) {
+                                                for (DocumentChange doc : documentSnapshots.getDocumentChanges()) {
+                                                    String blogPostId = doc.getDocument().getId();
+                                                    DocumentReference docref = firebaseFirestore.collection(i +"Posts").document(blogPostId);
+                                                    docref.update("user_name", user_name).addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                        @Override
+                                                        public void onSuccess(Void aVoid) {
 
 
-                                        }
-                                    })
-                                            .addOnFailureListener(new OnFailureListener() {
-                                                @Override
-                                                public void onFailure(@NonNull Exception e) {
+                                                        }
+                                                    })
+                                                            .addOnFailureListener(new OnFailureListener() {
+                                                                @Override
+                                                                public void onFailure(@NonNull Exception e) {
+
+                                                                }
+                                                            });
+                                                    docref.update("user_image", download_uri.toString()).addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                        @Override
+                                                        public void onSuccess(Void aVoid) {
+
+
+                                                        }
+                                                    })
+                                                            .addOnFailureListener(new OnFailureListener() {
+                                                                @Override
+                                                                public void onFailure(@NonNull Exception e) {
+
+                                                                }
+                                                            });
+
 
                                                 }
-                                            });
-                                    docref.update("user_image", download_uri.toString()).addOnSuccessListener(new OnSuccessListener<Void>() {
-                                        @Override
-                                        public void onSuccess(Void aVoid) {
-
-
+                                            }
                                         }
-                                    })
-                                            .addOnFailureListener(new OnFailureListener() {
-                                                @Override
-                                                public void onFailure(@NonNull Exception e) {
-
-                                                }
-                                            });
-
-
+                                    });
                                 }
                             }
                         }
                     });
+
 
                 }catch (Exception e){
 

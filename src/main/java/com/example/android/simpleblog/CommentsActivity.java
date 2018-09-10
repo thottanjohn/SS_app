@@ -78,7 +78,7 @@ public class CommentsActivity extends AppCompatActivity {
         comment_list.setAdapter(commentsRecyclerAdapter);
 
 
-        firebaseFirestore.collection("GreenVibesPosts/" + blog_post_id + "/Comments").orderBy("timestamp", Query.Direction.DESCENDING)
+        firebaseFirestore.collection(event_name+"Posts/" + blog_post_id + "/Comments").orderBy("timestamp", Query.Direction.DESCENDING)
                 .addSnapshotListener(CommentsActivity.this, new EventListener<QuerySnapshot>() {
             @Override
             public void onEvent(QuerySnapshot documentSnapshots, FirebaseFirestoreException e) {
@@ -129,7 +129,7 @@ public class CommentsActivity extends AppCompatActivity {
                                 commentsMap.put("timestamp", FieldValue.serverTimestamp());
                                 commentsMap.put("user_name",username);
                                 commentsMap.put("user_image",userimage);
-                                firebaseFirestore.collection("GreenVibesPosts/" + blog_post_id + "/Comments").add(commentsMap).addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
+                                firebaseFirestore.collection(event_name + blog_post_id + "/Comments").add(commentsMap).addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
                                     @Override
                                     public void onComplete(@NonNull Task<DocumentReference> task) {
 

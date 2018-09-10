@@ -16,12 +16,14 @@ import java.util.ArrayList;
 public class MyAdapter extends PagerAdapter {
 
     private ArrayList<String> images;
+    private ArrayList<Integer> resourceimage;
     private LayoutInflater inflater;
     private Context context;
 
-    public MyAdapter(Context context, ArrayList<String> images) {
+    public MyAdapter(Context context, ArrayList<String> images, ArrayList<Integer> resourceimage) {
         this.context = context;
         this.images=images;
+        this.resourceimage =resourceimage;
         inflater = LayoutInflater.from(context);
     }
 
@@ -38,36 +40,45 @@ public class MyAdapter extends PagerAdapter {
     @Override
     public Object instantiateItem(ViewGroup view, int position) {
         View myImageLayout = inflater.inflate(R.layout.slides, view, false);
-        ImageView myImage =  myImageLayout
+        ImageView myImage = myImageLayout
                 .findViewById(R.id.image);
-        TextView place =  myImageLayout
+        TextView place = myImageLayout
                 .findViewById(R.id.place);
-        ImageView place_image =  myImageLayout
+        ImageView place_image = myImageLayout
                 .findViewById(R.id.crown);
-        RequestOptions requestOptions = new RequestOptions();
-        requestOptions.placeholder(R.drawable.image_placeholder);
+        if(images.size()>0) {
 
-        Glide.with(context).applyDefaultRequestOptions(requestOptions).load(images.get(position)).into(myImage);
-        switch (position){
-            case 0:
-                String k;
-                k = position+1 + "st place ";
-               place.setText( k );
-                place_image.setImageResource(R.drawable.gold_crown_android);
-                break;
-            case 1:
-                String i = position+1 + "nd place ";
-                place.setText( i);
-             place_image.setImageResource(R.drawable.silver_crown_android);
-                break;
-            case 2:
-                String j = position+1 + "rd place ";
-                place.setText( j );
-                place_image.setImageResource(R.drawable.bronze_crown_android);
-                break;
-            default:
-                String l = position+1 + "th place ";
-                place.setText( l );
+
+            RequestOptions requestOptions = new RequestOptions();
+            requestOptions.placeholder(R.drawable.image_placeholder);
+
+            Glide.with(context).applyDefaultRequestOptions(requestOptions).load(images.get(position)).into(myImage);
+            switch (position) {
+                case 0:
+                    String k;
+                    k = position + 1 + "st place ";
+                    place.setText(k);
+                    place_image.setImageResource(R.drawable.gold_crown_android);
+                    break;
+                case 1:
+                    String i = position + 1 + "nd place ";
+                    place.setText(i);
+                    place_image.setImageResource(R.drawable.silver_crown_android);
+                    break;
+                case 2:
+                    String j = position + 1 + "rd place ";
+                    place.setText(j);
+                    place_image.setImageResource(R.drawable.bronze_crown_android);
+                    break;
+                default:
+                    String l = position + 1 + "th place ";
+                    place.setText(l);
+
+            }
+        }else{
+            place.setVisibility(View.INVISIBLE);
+            place_image.setVisibility(View.INVISIBLE);
+            myImage.setImageResource(resourceimage.get(position));
 
         }
         view.addView(myImageLayout, 0);

@@ -1,6 +1,7 @@
 package com.example.android.simpleblog;
 
 import android.annotation.TargetApi;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
@@ -45,7 +46,7 @@ public class UserBlogAdapter extends RecyclerView.Adapter<UserBlogAdapter.ViewHo
     private List<BlogPost> blog_list;
     private List<Users> user_list;
     public Context context;
-
+    private ProgressDialog mProgressDialog;
     private FirebaseFirestore firebaseFirestore;
     private FirebaseAuth firebaseAuth;
 
@@ -63,6 +64,7 @@ public class UserBlogAdapter extends RecyclerView.Adapter<UserBlogAdapter.ViewHo
 
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.user_blog_list, parent, false);
         context = parent.getContext();
+
 
         firebaseFirestore = FirebaseFirestore.getInstance();
         firebaseAuth = FirebaseAuth.getInstance();
@@ -94,6 +96,12 @@ public class UserBlogAdapter extends RecyclerView.Adapter<UserBlogAdapter.ViewHo
 
             holder.setUserData(username, image,userid);
             holder.setBlogImage(image_url, thumbUri);
+            mProgressDialog = new ProgressDialog(context);
+            // mProgressDialog.setTitle("Loading User Data");
+            mProgressDialog.setMessage("Please wait deleting the post");
+            mProgressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+            mProgressDialog.setCanceledOnTouchOutside(false);
+
 
             if(userid.equals(currentUserId)){
 
@@ -105,30 +113,25 @@ public class UserBlogAdapter extends RecyclerView.Adapter<UserBlogAdapter.ViewHo
                 holder.delete_btn.setVisibility(View.INVISIBLE);
 
             }
-            firebaseFirestore.collection(event_name+"Posts/" + blogPostId + "/Likes").addSnapshotListener(new EventListener<QuerySnapshot>() {
+            firebaseFirestore.collection(event_name+"Posts/").document(blogPostId).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
                 @Override
-                public void onEvent(QuerySnapshot documentSnapshots, FirebaseFirestoreException e) {
-                    try{
-                        if (!documentSnapshots.isEmpty()) {
+                public void onSuccess(DocumentSnapshot documentSnapshot) {
 
-                            int count = documentSnapshots.size();
+                    if(documentSnapshot.exists()) {
+                        float score = 0;
 
-                            holder.updateLikesCount(count);
-
+                        score = documentSnapshot.getLong("likes");
 
 
-                        } else {
-
-                            holder.updateLikesCount(0);
-
-
-                        }
-
-                    }   catch (Exception e2){
-                        Toast.makeText(context, e2.getMessage(), Toast.LENGTH_LONG).show();
+                        holder.updateLikesCount(score);
+                    }
+                    else{
 
                     }
+
                 }
+
+
             });
 
             //User Data will be retrieved here...
@@ -149,12 +152,13 @@ public class UserBlogAdapter extends RecyclerView.Adapter<UserBlogAdapter.ViewHo
                     .addSnapshotListener( new EventListener<QuerySnapshot>() {
                         @Override
                         public void onEvent(QuerySnapshot documentSnapshots, FirebaseFirestoreException e) {
+                            try {
+                                if (!documentSnapshots.isEmpty()) {
 
-                            if (!documentSnapshots.isEmpty()) {
-
-                                int counts = documentSnapshots.size();
-                                holder.updateCommentCount(counts);
-                            }
+                                    int counts = documentSnapshots.size();
+                                    holder.updateCommentCount(counts);
+                                }
+                            }catch(Exception e2){}
                         }
 
 
@@ -179,29 +183,41 @@ public class UserBlogAdapter extends RecyclerView.Adapter<UserBlogAdapter.ViewHo
 
                 }
             });
-            holder.delete_progress_bar.setVisibility(ProgressBar.INVISIBLE);
+
 
             holder.delete_btn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    holder.delete_progress_bar.setVisibility(ProgressBar.VISIBLE);
 
+                    mProgressDialog.show();
 
                     try {
                         firebaseFirestore.collection(event_name + "Posts").document(blogPostId).delete().addOnSuccessListener(new OnSuccessListener<Void>() {
                             @Override
                             public void onSuccess(Void aVoid) {
+
+
                                 blog_list.remove(position);
-                                holder.delete_progress_bar.setVisibility(ProgressBar.INVISIBLE);
-                                Intent commentIntent = new Intent(context, NewAccountActivity.class);
-                                commentIntent.putExtra("userid", userid);
+                                mProgressDialog.dismiss();
+                                Intent commentIntent = new Intent(context, MainActivity.class);
 
                                 context.startActivity(commentIntent);
+
+
+
 
                             }
                         }).addOnFailureListener(new OnFailureListener() {
                             @Override
                             public void onFailure(@NonNull Exception e) {
+                                Toast.makeText(context, "hello", Toast.LENGTH_SHORT).show();
+
+                                mProgressDialog.dismiss();
+                                Toast.makeText(context ,"Post was deleted", Toast.LENGTH_LONG).show();
+                                Intent commentIntent = new Intent(context, MainActivity.class);
+
+                                context.startActivity(commentIntent);
+
 
                             }
                         });
@@ -211,6 +227,8 @@ public class UserBlogAdapter extends RecyclerView.Adapter<UserBlogAdapter.ViewHo
                     }
                 }
             });
+      
+
 
         }
     }
@@ -239,7 +257,7 @@ public class UserBlogAdapter extends RecyclerView.Adapter<UserBlogAdapter.ViewHo
 
         private Button delete_btn;
 
-        private ProgressBar delete_progress_bar;
+
 
         ViewHolder(View itemView) {
             super(itemView);
@@ -247,7 +265,7 @@ public class UserBlogAdapter extends RecyclerView.Adapter<UserBlogAdapter.ViewHo
 
             blogCommentBtn = mView.findViewById(R.id.blog_comment_icon);
             delete_btn =mView.findViewById(R.id.delete_btn);
-            delete_progress_bar=mView.findViewById(R.id.delete_progress);
+
 
         }
 
@@ -310,10 +328,10 @@ public class UserBlogAdapter extends RecyclerView.Adapter<UserBlogAdapter.ViewHo
             blogLikeCount.setText(k);
 
         }
-        public void updateLikesCount(int count){
+        public void updateLikesCount(float count){
 
             blogLikeCount = mView.findViewById(R.id.blog_like_count);
-            String k=count + " Comments";
+            String k="Score:"+count;
             blogLikeCount.setText(k);
 
         }

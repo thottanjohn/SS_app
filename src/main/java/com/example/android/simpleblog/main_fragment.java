@@ -52,6 +52,7 @@ public class main_fragment extends Fragment {
     private static int currentPage = 0;
     private static final Integer[] XMEN= {R.drawable.automn,R.drawable.christmas_composition,R.drawable.girlsoloselfie};
     private ArrayList<String> XMENArray = new ArrayList<String>();
+    private ArrayList<Integer> XMENintegerArray = new ArrayList<Integer>();
     public main_fragment () {
         // Required empty public constructor
     }
@@ -72,7 +73,7 @@ public class main_fragment extends Fragment {
 
             start_btn = view.findViewById(R.id.btn_start);
             mPager =  view.findViewById(R.id.pager);
-            myAdapter= new MyAdapter(getActivity(),XMENArray);
+            myAdapter= new MyAdapter(getActivity(),XMENArray,XMENintegerArray);
             event_title =view.findViewById(R.id.event_title);
             event_title.setVisibility(View.VISIBLE);
             mPager.setAdapter(myAdapter);
@@ -89,10 +90,11 @@ public class main_fragment extends Fragment {
                 firstQuery.addSnapshotListener(getActivity(), new EventListener<QuerySnapshot>() {
                     @Override
                     public void onEvent(QuerySnapshot documentSnapshots, FirebaseFirestoreException e) {
-                        if (!documentSnapshots.isEmpty()) {
+                        try {
+                            if (!documentSnapshots.isEmpty()) {
                             for (DocumentChange doc : documentSnapshots.getDocumentChanges()) {
 
-                                try {
+
                                     boolean over = doc.getDocument().getBoolean("over");
                                     if (over) {
 
@@ -104,18 +106,20 @@ public class main_fragment extends Fragment {
                                         if (mDate.getTime() > diff) {
 
                                             mDate = end_date;
-                                            Toast.makeText(getActivity(),String.valueOf((int) mDate.getTime()), Toast.LENGTH_LONG).show();
+
                                         }
                                     }
                                 }
-                                catch (Exception e1){
-                                    sendToLogin();
-                                }
-
-
 
                             }
                         }
+
+
+                            catch (Exception e1){
+                            sendToLogin();
+                        }
+
+
                         if(Jdate != mDate) {
 
 
@@ -124,33 +128,38 @@ public class main_fragment extends Fragment {
                                 StQuery.addSnapshotListener(new EventListener<QuerySnapshot>() {
                                     @Override
                                     public void onEvent(QuerySnapshot documentSnapshots, FirebaseFirestoreException e) {
-                                        if (!documentSnapshots.isEmpty()) {
-                                            for (DocumentChange doc : documentSnapshots.getDocumentChanges()) {
+                                        try {
 
-                                                String event_name = doc.getDocument().getString("event_name");
-                                                event_title.setText(event_name + " Winners");
-                                                Query SecondQuery = firebaseFirestore.collection(event_name + "Posts").orderBy("likes", Query.Direction.DESCENDING).limit(3);
-                                                SecondQuery.addSnapshotListener(getActivity(), new EventListener<QuerySnapshot>() {
-                                                    @Override
-                                                    public void onEvent(QuerySnapshot documentSnapshots, FirebaseFirestoreException e) {
-                                                        if (!documentSnapshots.isEmpty()) {
-                                                            for (int i = 0; i < 3; i++) {
-                                                                for (DocumentChange doc : documentSnapshots.getDocumentChanges()) {
+                                            if (!documentSnapshots.isEmpty()) {
+                                                for (DocumentChange doc : documentSnapshots.getDocumentChanges()) {
 
-
-                                                                    String image_url = doc.getDocument().getString("image_url");
-
-                                                                    XMENArray.add(image_url);
-                                                                    myAdapter.notifyDataSetChanged();
+                                                    String event_name = doc.getDocument().getString("event_name");
+                                                    event_title.setText(event_name + " Winners");
+                                                    Query SecondQuery = firebaseFirestore.collection(event_name + "Posts").orderBy("likes", Query.Direction.DESCENDING).limit(3);
+                                                    SecondQuery.addSnapshotListener(getActivity(), new EventListener<QuerySnapshot>() {
+                                                        @Override
+                                                        public void onEvent(QuerySnapshot documentSnapshots, FirebaseFirestoreException e) {
+                                                            if (!documentSnapshots.isEmpty()) {
+                                                                for (int i = 0; i < 3; i++) {
+                                                                    for (DocumentChange doc : documentSnapshots.getDocumentChanges()) {
 
 
+                                                                        String image_url = doc.getDocument().getString("image_url");
+
+                                                                        XMENArray.add(image_url);
+                                                                        myAdapter.notifyDataSetChanged();
+
+
+                                                                    }
                                                                 }
                                                             }
                                                         }
-                                                    }
-                                                });
+                                                    });
 
+                                                }
                                             }
+                                        }catch (Exception e3){
+
                                         }
                                     }
                                 });
@@ -161,12 +170,11 @@ public class main_fragment extends Fragment {
                         }
 
                         else {
-                            Toast.makeText(getActivity(),String.valueOf((int) mDate.getTime()), Toast.LENGTH_LONG).show();
-                            Toast.makeText(getActivity(),mDate.toString(), Toast.LENGTH_LONG).show();
+
                             event_title.setVisibility(View.INVISIBLE);
                             for (int i = 0; i < XMEN.length; i++) {
 
-                                XMENArray.add(XMEN[i].toString());
+                                XMENintegerArray.add(XMEN[i]);
                                 myAdapter.notifyDataSetChanged();
 
                             }

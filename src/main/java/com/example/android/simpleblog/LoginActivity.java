@@ -180,7 +180,7 @@ private  String DisplayName;
             try {
                 // Google Sign In was successful, authenticate with Firebase
                 final GoogleSignInAccount account = task.getResult(ApiException.class);
-                FirebaseUser current_user = FirebaseAuth.getInstance().getCurrentUser();
+         /*       FirebaseUser current_user = FirebaseAuth.getInstance().getCurrentUser();
                 String uid = current_user.getUid();
 
                 mDatabase = FirebaseDatabase.getInstance().getReference().child("Users").child(uid);
@@ -198,15 +198,15 @@ private  String DisplayName;
 
                         if(task.isSuccessful()){
 
-                            firebaseAuthWithGoogle(account);
+
 
                         }
 
                     }
-                });
+                });  */
 
 
-
+                firebaseAuthWithGoogle(account);
 
             } catch (ApiException e) {
                 // Google Sign In failed, update UI appropriately

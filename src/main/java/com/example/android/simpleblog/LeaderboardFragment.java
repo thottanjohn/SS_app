@@ -34,6 +34,7 @@ public class LeaderboardFragment extends Fragment {
     private List<BlogPost> blog_list;
     private List<Users> user_list;
 
+
     private FirebaseFirestore firebaseFirestore;
     private FirebaseAuth firebaseAuth;
     private LeaderboardRecyclerAdapter LeaderboardRecyclerAdapter;
@@ -83,32 +84,13 @@ public class LeaderboardFragment extends Fragment {
 
                 firebaseFirestore = FirebaseFirestore.getInstance();
 
-                blog_list_view.addOnScrollListener(new RecyclerView.OnScrollListener() {
-                    @Override
-                    public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-                        super.onScrolled(recyclerView, dx, dy);
 
-                        Boolean reachedBottom = !recyclerView.canScrollVertically(1);
-
-                        if (reachedBottom) {
-
-                            loadMorePost();
-
-                        }
-
-                    }
-                });
-                Query firstQuery = firebaseFirestore.collection( event_name+"Posts").orderBy("likes",Query.Direction.DESCENDING).limit(6);
+                Query firstQuery = firebaseFirestore.collection( event_name+"Posts").orderBy("likes",Query.Direction.DESCENDING);
                 firstQuery.addSnapshotListener(getActivity(), new EventListener<QuerySnapshot>() {
                     @Override
                     public void onEvent(QuerySnapshot documentSnapshots, FirebaseFirestoreException e) {
                         if (!documentSnapshots.isEmpty()) {
-                            if (isFirstPageFirstLoad) {
 
-                                lastVisible = documentSnapshots.getDocuments().get(documentSnapshots.size() - 1);
-                                blog_list.clear();
-
-                            }
                             for (DocumentChange doc : documentSnapshots.getDocumentChanges()) {
 
                                 if (doc.getType() == DocumentChange.Type.ADDED  ) {
@@ -116,45 +98,11 @@ public class LeaderboardFragment extends Fragment {
                                     String blogPostId = doc.getDocument().getId();
                                     final BlogPost blogPost = doc.getDocument().toObject(BlogPost.class).withId(blogPostId);
 
-                                    if (isFirstPageFirstLoad) {
 
-
-                                        blog_list.add(blogPost);
-
-                                    } else {
-
-                                        blog_list.add(0, blogPost);
-
-                                    }
-
+                                    blog_list.add(blogPost);
                                     LeaderboardRecyclerAdapter.notifyDataSetChanged();
 
 
-
-                                }else if(doc.getType() == DocumentChange.Type.MODIFIED ){
-                                    String blogPostId = doc.getDocument().getId();
-                                    final BlogPost blogPost = doc.getDocument().toObject(BlogPost.class).withId(blogPostId);
-
-                                    blog_list.remove(blogPost);
-
-                                    if (isFirstPageFirstLoad) {
-
-
-                                        blog_list.add(blogPost);
-
-                                    } else {
-
-                                        blog_list.add(0, blogPost);
-
-                                    }
-                                    LeaderboardRecyclerAdapter.notifyDataSetChanged();
-
-                                }else if(doc.getType() == DocumentChange.Type.REMOVED){
-                                    String blogPostId = doc.getDocument().getId();
-                                    final BlogPost blogPost = doc.getDocument().toObject(BlogPost.class).withId(blogPostId);
-
-                                    blog_list.remove(blogPost);
-                                    LeaderboardRecyclerAdapter.notifyDataSetChanged();
 
                                 }
 

@@ -37,23 +37,27 @@
             android:theme="@style/Base.Theme.AppCompat" />
         <activity
             android:name=".NewPostActivity"
-            android:parentActivityName=".MainActivity" />
+            android:parentActivityName=".MainActivity"
+            android:screenOrientation="portrait" />
         <activity
             android:name=".CommentsActivity"
-            android:parentActivityName=".MainActivity" />
-        <activity android:name=".NewAccountActivity" >
+            android:parentActivityName=".MainActivity"
+            android:screenOrientation="portrait" />
+        <activity android:name=".NewAccountActivity"
+            android:screenOrientation="portrait" >
 		<intent-filter>
                 <action android:name="com.example.android.simpleblog.TARGET_NOTIFICATION" />
 
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
-        <activity android:name=".EventsActivity" />
-        <activity android:name=".AboutActivity" />
-        <activity android:name=".UserAccountActivity" />
-        <activity android:name=".ContactActivity" />
-        <activity android:name=".RandomActivity" />
-        <activity android:name=".PageActivity" />
+
+        <activity android:name=".ContactActivity"
+            android:screenOrientation="portrait" />
+        <activity android:name=".RandomActivity"
+            android:screenOrientation="portrait" />
+        <activity android:name=".PageActivity"
+            android:screenOrientation="portrait" />
         <activity android:name=".Chat"></activity>
     </application>
 

@@ -4,6 +4,8 @@ package com.example.android.simpleblog;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.CountDownTimer;
 import android.os.Handler;
@@ -45,7 +47,7 @@ public class EventsRecyclerAdapter extends RecyclerView.Adapter<EventsRecyclerAd
     private Context context;
     private ArrayList<String> Rules;
 
-    EventsRecyclerAdapter(List<Events> events_list){
+    EventsRecyclerAdapter(List<Events> events_list) {
 
         this.events_list = events_list;
 
@@ -77,7 +79,7 @@ public class EventsRecyclerAdapter extends RecyclerView.Adapter<EventsRecyclerAd
             holder.rules_spinner.setVisibility(View.GONE);
             holder.rules.setVisibility(View.GONE);
             final String eventId = events_list.get(position).EventId;
-            Rules =events_list.get(position).getRules();
+            Rules = events_list.get(position).getRules();
             final String currentUserId = firebaseAuth.getCurrentUser().getUid();
 
 
@@ -89,10 +91,10 @@ public class EventsRecyclerAdapter extends RecyclerView.Adapter<EventsRecyclerAd
 
             Date start_date = events_list.get(position).getStart_date();
             Date end_date = events_list.get(position).getEnd_date();
-            Date current_date =new Date(System.currentTimeMillis());
+            Date current_date = new Date(System.currentTimeMillis());
             final boolean over = events_list.get(position).isOver();
-            long dif =start_date.getTime() - current_date.getTime();
-            if(dif<=0) {
+            long dif = start_date.getTime() - current_date.getTime();
+            if (dif <= 0) {
                 holder.event_enter_btn.setEnabled(true);
                 holder.event_enter_btn.setVisibility(View.VISIBLE);
                 holder.event_explore_btn.setVisibility(View.VISIBLE);
@@ -100,43 +102,57 @@ public class EventsRecyclerAdapter extends RecyclerView.Adapter<EventsRecyclerAd
                 holder.rules_spinner.setVisibility(View.VISIBLE);
                 holder.rules.setVisibility(View.VISIBLE);
                 holder.initUI();
-                Date currentdate =new Date(System.currentTimeMillis());
-                long time =end_date.getTime()-currentdate.getTime();
-                if (time<0){
+                Date currentdate = new Date(System.currentTimeMillis());
+                long time = end_date.getTime() - currentdate.getTime();
+                if (time < 0) {
                     holder.setevent("Contest has ended");
-                    holder.updatedata( eventId);
+                    holder.updatedata(eventId);
+                    holder.event_enter_btn.setEnabled(false);
 
-                }
-                else {
+                    holder.event_explore_btn.setEnabled(false);
+
+                    holder.rules_spinner.setVisibility(View.GONE);
+                    holder.rules.setVisibility(View.GONE);
+                } else {
                     holder.countDownDayStart(end_date.getTime() - currentdate.getTime());
 
                     holder.event_enter_btn.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View view) {
-                            Intent intent = new Intent(context, NewPostActivity.class);
-                            intent.putExtra("event_name", event_name);
+                            if(holder.checkConnection()){
+                                Intent intent = new Intent(context, NewPostActivity.class);
+                                intent.putExtra("event_name", event_name);
 
-                            intent.putExtra("over", over);
-                            context.startActivity(intent);
+                                intent.putExtra("over", over);
+                                context.startActivity(intent);
+                            }else{
+                                Toast.makeText(context, "Please check your internet connection", Toast.LENGTH_SHORT).show();
+                            }
+
                         }
                     });
                     holder.event_explore_btn.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View view) {
-                            Intent intent = new Intent(context, PageActivity.class);
-                            intent.putExtra("event_name", event_name);
-                            intent.putExtra("over", over);
-                            context.startActivity(intent);
+                            if(holder.checkConnection()){
+                                Intent intent = new Intent(context, PageActivity.class);
+                                intent.putExtra("event_name", event_name);
+                                intent.putExtra("over", over);
+                                context.startActivity(intent);
+                            }else{
+                                Toast.makeText(context, "Please check your internet connection", Toast.LENGTH_SHORT).show();
+                            }
+
                         }
                     });
 
-                holder.setevent(event_name);
-                holder.seteventimage(event_image);
-                holder.setRules(Rules);
+                    holder.setevent(event_name);
+                    holder.seteventimage(event_image);
+                    holder.setRules(Rules);
 
 
                 }
-            }else{
+            } else {
                 holder.event_enter_btn.setEnabled(false);
                 holder.event_enter_btn.setVisibility(View.GONE);
                 holder.event_explore_btn.setEnabled(false);
@@ -145,18 +161,15 @@ public class EventsRecyclerAdapter extends RecyclerView.Adapter<EventsRecyclerAd
                 holder.rules.setVisibility(View.GONE);
                 holder.initUI();
 
-                long st_time =current_date.getTime();
-                long end_time =start_date.getTime();
-                long diff =end_time-st_time;
+                long st_time = current_date.getTime();
+                long end_time = start_date.getTime();
+                long diff = end_time - st_time;
                 holder.countDownStart(diff);
 
 
-
-                event_image="no_image";
+                event_image = "no_image";
                 holder.setevent("COMING SOON");
                 holder.seteventimage(event_image);
-
-
 
 
             }
@@ -175,25 +188,24 @@ public class EventsRecyclerAdapter extends RecyclerView.Adapter<EventsRecyclerAd
 
 
         private View mView;
-        private Button event_enter_btn,event_explore_btn;
+        private Button event_enter_btn, event_explore_btn;
         private TextView event_name;
         private ImageView event_image;
         private ConstraintLayout cardview;
         private TextView rules_spinner;
 
 
-        private TextView tv_days, tv_hour, tv_minute, tv_second,rules;
-
+        private TextView tv_days, tv_hour, tv_minute, tv_second, rules;
 
 
         ViewHolder(View itemView) {
             super(itemView);
             mView = itemView;
-            event_enter_btn =mView.findViewById(R.id.event_btn_enter);
-            event_explore_btn =mView.findViewById(R.id.event_btn_explore);
-            cardview=mView.findViewById(R.id.cardView);
-            rules_spinner =mView.findViewById(R.id.rules_spinner);
-            rules =mView.findViewById(R.id.Rules);
+            event_enter_btn = mView.findViewById(R.id.event_btn_enter);
+            event_explore_btn = mView.findViewById(R.id.event_btn_explore);
+            cardview = mView.findViewById(R.id.cardView);
+            rules_spinner = mView.findViewById(R.id.rules_spinner);
+            rules = mView.findViewById(R.id.Rules);
         }
 
         void setevent(String eventname) {
@@ -201,46 +213,41 @@ public class EventsRecyclerAdapter extends RecyclerView.Adapter<EventsRecyclerAd
             event_name.setText(eventname);
 
 
-
-
-
-
-
         }
-        void seteventimage(String eventimage){
-            if(eventimage.equals("no_image")){
 
-            }
-            else{
-                event_image=mView.findViewById(R.id.event_image);
+        void seteventimage(String eventimage) {
+            if (eventimage.equals("no_image")) {
+
+            } else {
+                event_image = mView.findViewById(R.id.event_image);
                 RequestOptions requestOptions = new RequestOptions();
                 requestOptions.placeholder(R.drawable.image_placeholder);
 
                 Glide.with(context).applyDefaultRequestOptions(requestOptions).load(eventimage).into(event_image);
 
 
-
             }
 
         }
+
         private void initUI() {
 
             tv_days = mView.findViewById(R.id.tv_days);
-            tv_hour =  mView.findViewById(R.id.tv_hour);
-            tv_minute =  mView.findViewById(R.id.tv_minute);
-            tv_second =  mView.findViewById(R.id.tv_second);
+            tv_hour = mView.findViewById(R.id.tv_hour);
+            tv_minute = mView.findViewById(R.id.tv_minute);
+            tv_second = mView.findViewById(R.id.tv_second);
         }
-        private void countDownStart( long dif) {
 
+        private void countDownStart(long dif) {
 
 
             new CountDownTimer(dif, 1000) {
 
                 public void onTick(long millisUntilFinished) {
                     long Days = (millisUntilFinished) / (24 * 60 * 60 * 1000);
-                    long Hours = (millisUntilFinished)/ (60 * 60 * 1000) % 24;
-                    long Minutes = (millisUntilFinished)/ (60 * 1000) % 60;
-                    long Seconds = (millisUntilFinished)/ 1000 % 60;
+                    long Hours = (millisUntilFinished) / (60 * 60 * 1000) % 24;
+                    long Minutes = (millisUntilFinished) / (60 * 1000) % 60;
+                    long Seconds = (millisUntilFinished) / 1000 % 60;
                     //
                     tv_days.setText(String.format("%02d", Days));
                     tv_hour.setText(String.format("%02d", Hours));
@@ -249,13 +256,11 @@ public class EventsRecyclerAdapter extends RecyclerView.Adapter<EventsRecyclerAd
                 }
 
                 public void onFinish() {
-                cardview.setVisibility(View.GONE);
-
+                    cardview.setVisibility(View.GONE);
 
 
                 }
             }.start();
-
 
 
         }
@@ -263,21 +268,21 @@ public class EventsRecyclerAdapter extends RecyclerView.Adapter<EventsRecyclerAd
 
         public void countDownDayStart(long l) {
 
-        cardview.setVisibility(View.GONE);
+            cardview.setVisibility(View.GONE);
         }
 
         public void setRules(ArrayList<String> rules) {
-        StringBuilder builder  =new StringBuilder();
+            StringBuilder builder = new StringBuilder();
             rules_spinner.setLines(rules.size());
-        for(String i: rules){
-            builder.append("=>"+i+"\n");
-        }
-       rules_spinner.setText(builder);
+            for (String i : rules) {
+                builder.append("=>" + i + "\n");
+            }
+            rules_spinner.setText(builder);
         }
 
-        private void updatedata(String  eventId) {
-            DocumentReference docref=  firebaseFirestore.collection("Events").document( eventId);
-            docref.update("over",true).addOnSuccessListener(new OnSuccessListener<Void>() {
+        private void updatedata(String eventId) {
+            DocumentReference docref = firebaseFirestore.collection("Events").document(eventId);
+            docref.update("over", true).addOnSuccessListener(new OnSuccessListener<Void>() {
                 @Override
                 public void onSuccess(Void aVoid) {
 
@@ -292,6 +297,25 @@ public class EventsRecyclerAdapter extends RecyclerView.Adapter<EventsRecyclerAd
                     });
 
 
+        }
+
+        protected boolean isOnline() {
+            ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+            NetworkInfo netInfo = cm.getActiveNetworkInfo();
+            if (netInfo != null && netInfo.isConnectedOrConnecting()) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+        public boolean checkConnection() {
+            if (isOnline()) {
+                return true;
+            } else {
+                return false;
+
+            }
         }
     }
 }

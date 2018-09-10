@@ -61,7 +61,7 @@
             app:layout_constraintStart_toStartOf="parent"
             tools:targetApi="lollipop" />
 
-        <Button
+   <!--     <Button
             android:id="@+id/profile_send_req_btn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -92,7 +92,7 @@
             android:textStyle="bold"
             app:layout_constraintBottom_toTopOf="@+id/edit_profile"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/setup_name" />
+            app:layout_constraintTop_toBottomOf="@+id/setup_name" /> -->
 
         <Button
             android:id="@+id/chat_button"
@@ -111,17 +111,6 @@
             app:layout_constraintStart_toEndOf="@+id/setup_image"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <TextView
-            android:id="@+id/profile_totalFriends"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="52dp"
-            android:layout_marginStart="52dp"
-            android:layout_marginTop="100dp"
-            android:text="FriendsCount"
-            android:textSize="18sp"
-            app:layout_constraintStart_toEndOf="@+id/setup_image"
-            app:layout_constraintTop_toBottomOf="@+id/chat_button" />
     </android.support.constraint.ConstraintLayout>
 
 </FrameLayout>

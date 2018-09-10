@@ -85,6 +85,7 @@ public class Eventsfragment extends Fragment {
             firstQuery.addSnapshotListener(getActivity(), new EventListener<QuerySnapshot>() {
                 @Override
                 public void onEvent(QuerySnapshot documentSnapshots, FirebaseFirestoreException e) {
+                try {
                     if (!documentSnapshots.isEmpty()) {
                         for (DocumentChange doc : documentSnapshots.getDocumentChanges()) {
 
@@ -92,17 +93,20 @@ public class Eventsfragment extends Fragment {
 
                                 String event_Id = doc.getDocument().getId();
                                 final Events events = doc.getDocument().toObject(Events.class).withId(event_Id);
-                                boolean over  =doc.getDocument().getBoolean("over");
-                    if(!over){
+                                boolean over = doc.getDocument().getBoolean("over");
+                                if (!over) {
 
-                         events_list.add(events);
-                         EventsRecyclerAdapter.notifyDataSetChanged();
-                                 }
+                                    events_list.add(events);
+                                    EventsRecyclerAdapter.notifyDataSetChanged();
+                                }
 
                             }
 
                         }
                     }
+                }catch (Exception e5){
+                    sendToLogin();
+                }
                 }
             });  }
 

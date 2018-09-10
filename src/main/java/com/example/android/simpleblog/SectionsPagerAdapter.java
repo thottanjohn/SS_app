@@ -4,10 +4,6 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 
-import com.example.android.simpleblog.ChatsFragment;
-import com.example.android.simpleblog.FriendsFragment;
-import com.example.android.simpleblog.RequestsFragment;
-
 /**
  * Created by AkshayeJH on 11/06/17.
  */
@@ -23,7 +19,7 @@ class SectionsPagerAdapter extends FragmentPagerAdapter{
     public Fragment getItem(int position) {
 
         switch(position) {
-            case 0:
+       /*     case 0:
                 RequestsFragment requestsFragment = new RequestsFragment();
                 return requestsFragment;
 
@@ -35,6 +31,8 @@ class SectionsPagerAdapter extends FragmentPagerAdapter{
                 FriendsFragment friendsFragment = new FriendsFragment();
                 return friendsFragment;
 
+
+        }*/
             default:
                 return  null;
         }

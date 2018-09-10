@@ -20,19 +20,37 @@ public class BlogPost extends BlogPostId {
     private FirebaseFirestore firebaseFirestore;
     private String event_name,user_id, image_url, desc, image_thumb,user_name,user_image;
     private Date timestamp;
-    private int likes;
+    private float likes,total;
 
     public BlogPost() {}
 
 
+    public float getLikes() {
+        return likes;
+    }
 
-    public BlogPost(String user_id, String image_url, String desc, String image_thumb, Date timestamp, int likes, String user_name, String user_image, String event_name) {
+    public void setLikes(float likes) {
+        this.likes = likes;
+    }
+
+    public float getTotal() {
+        return total;
+    }
+
+    public void setTotal(float total) {
+        this.total = total;
+    }
+
+    public BlogPost(String user_id, String image_url, String desc, String image_thumb, Date timestamp, float likes, String user_name, String user_image, String event_name, float total) {
         this.user_id = user_id;
         this.image_url = image_url;
         this.desc = desc;
         this.image_thumb = image_thumb;
         this.timestamp = timestamp;
         this.likes=likes;
+        this.total =total;
+
+
         this.user_name = user_name;
         this.event_name=event_name;
 

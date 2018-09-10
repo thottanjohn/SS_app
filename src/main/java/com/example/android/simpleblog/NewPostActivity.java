@@ -195,6 +195,7 @@ public class NewPostActivity extends AppCompatActivity {
                                                         postMap.put("user_id", current_user_id);
                                                         postMap.put("timestamp", FieldValue.serverTimestamp());
                                                         postMap.put("likes", 0);
+                                                        postMap.put("total", 0);
                                                         postMap.put("user_name", username);
                                                         postMap.put("user_image", userimage);
                                                         postMap.put("event_name", event_name);

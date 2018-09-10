@@ -15,6 +15,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.PopupWindow;
+import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -25,6 +26,7 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
@@ -43,6 +45,8 @@ import java.util.Map;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
+import static android.icu.lang.UCharacter.GraphemeClusterBreak.L;
+
 public class BlogRecyclerAdapter extends RecyclerView.Adapter<BlogRecyclerAdapter.ViewHolder> {
 
     public List<BlogPost> blog_list;
@@ -54,9 +58,8 @@ public class BlogRecyclerAdapter extends RecyclerView.Adapter<BlogRecyclerAdapte
     public int likes;
 
     BlogRecyclerAdapter(List<BlogPost> blog_list, List<Users> user_list){
-
         this.blog_list = blog_list;
-    this.user_list = user_list;
+        this.user_list = user_list;
 
     }
 
@@ -90,16 +93,21 @@ public class BlogRecyclerAdapter extends RecyclerView.Adapter<BlogRecyclerAdapte
 
         String dateString =blog_list.get(position).getTimestamp();
         final String userid   =blog_list.get(position).getUser_id();
+        final float currenttotal =blog_list.get(position).getTotal();
+        float likes =blog_list.get(position).getLikes();
 
 
-            String username = blog_list.get(position).getUser_name();
-            String image = blog_list.get(position).getUser_image();
+        String username = blog_list.get(position).getUser_name();
+        String image = blog_list.get(position).getUser_image();
         final String event_name =blog_list.get(position).getEvent_name();
-       holder.setUserData(username, image,userid);
+
+        holder.setUserData(username, image,userid);
 
         holder.setBlogImage(image_url, thumbUri);
 
-            holder.setTime(dateString);
+        holder.setTime(dateString);
+
+       
 
 
 
@@ -148,31 +156,27 @@ public class BlogRecyclerAdapter extends RecyclerView.Adapter<BlogRecyclerAdapte
 
 
 
-
                 firebaseFirestore.collection(event_name+"Posts/" + blogPostId + "/Likes").addSnapshotListener(new EventListener<QuerySnapshot>() {
                 @Override
                 public void onEvent(QuerySnapshot documentSnapshots, FirebaseFirestoreException e) {
                     try{
                     if (!documentSnapshots.isEmpty()) {
-
                         int count = documentSnapshots.size();
+
 
                         holder.updateLikesCount(count);
                         holder.updatedata(count,blogPostId,event_name);
 
 
-                    } else {
-
-                        holder.updateLikesCount(0);
-                        holder.updatedata(0,blogPostId,event_name);
-
                     }
 
-                }   catch (Exception e2){
-                       // Toast.makeText(context, e2.getMessage(), Toast.LENGTH_LONG).show();
+                } catch (Exception e2){
+                        // Toast.makeText(context, e2.getMessage(), Toast.LENGTH_LONG).show();
 
                     }
-            }
+                    }
+
+
                 });
 
 
@@ -185,22 +189,21 @@ public class BlogRecyclerAdapter extends RecyclerView.Adapter<BlogRecyclerAdapte
                 @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
                 @Override
                 public void onEvent(DocumentSnapshot documentSnapshot, FirebaseFirestoreException e) {
-try {
-    if (documentSnapshot.exists()) {
+    try {
+        if (documentSnapshot.exists()) {
 
         holder.blogLikeBtn.setImageDrawable(context.getDrawable(R.mipmap.action_like_accent));
 
-    } else {
+        } else {
 
         holder.blogLikeBtn.setImageDrawable(context.getDrawable(R.mipmap.action_like_gray));
 
-    }
-}catch (Exception e1){
+     }
+    }catch (Exception e1){
 
 //Toast.makeText(context, e2.getMessage(), Toast.LENGTH_LONG).show();
 
-}
-
+            }
                 }
             });
 
@@ -230,6 +233,96 @@ try {
                     });
                 }
             });
+/*
+            firebaseFirestore.collection(event_name+"Posts/" + blogPostId + "/Rating").document(currentUserId).addSnapshotListener(new EventListener<DocumentSnapshot>() {
+                @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+                @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+                @Override
+                public void onEvent(DocumentSnapshot documentSnapshot, FirebaseFirestoreException e) {
+                    try {
+                        if (documentSnapshot.exists()) {
+
+                            float rating = documentSnapshot.getLong("rating");
+
+                            holder.setRating(rating);
+
+                        } else {
+
+                            holder.setRating(0.0f);
+                        }
+                    } catch (Exception e1) {
+
+//Toast.makeText(context, e2.getMessage(), Toast.LENGTH_LONG).show();
+
+                    }
+                }
+            });
+
+            holder.blog_rating_bar.setOnRatingBarChangeListener(new RatingBar.OnRatingBarChangeListener() {
+                public void onRatingChanged(RatingBar ratingBar, final float rating,
+                                            boolean fromUser) {
+
+                    firebaseFirestore.collection(event_name+"Posts/" + blogPostId + "/Rating").document(currentUserId).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                        @Override
+                        public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                            if (!task.getResult().exists()) {
+                                float rating_value = rating;
+                                Map<String, Object> likesMap = new HashMap<>();
+                                likesMap.put("timestamp", FieldValue.serverTimestamp());
+                                likesMap.put("rating", rating_value);
+
+                                firebaseFirestore.collection(event_name + "Posts/" + blogPostId + "/Rating").document(currentUserId).set(likesMap);
+                                DocumentReference docref=  firebaseFirestore.collection(event_name+"Posts").document(blogPostId);
+                                docref.update("total",currenttotal+rating).addOnSuccessListener(new OnSuccessListener<Void>() {
+                                    @Override
+                                    public void onSuccess(Void aVoid) {
+
+
+                                    }
+                                })
+                                        .addOnFailureListener(new OnFailureListener() {
+                                            @Override
+                                            public void onFailure(@NonNull Exception e) {
+
+                                            }
+                                        });
+
+                            } else {
+                                float oldrating =task.getResult().getLong("rating");
+                                float rating_value = rating;
+                                Map<String, Object> likesMap = new HashMap<>();
+                                likesMap.put("timestamp", FieldValue.serverTimestamp());
+                                likesMap.put("rating", rating_value);
+
+                                firebaseFirestore.collection(event_name + "Posts/" + blogPostId + "/Rating").document(currentUserId).set(likesMap);
+                                firebaseFirestore.collection(event_name + "Posts/" + blogPostId + "/Rating").document(currentUserId).set(likesMap);
+                                DocumentReference docref=  firebaseFirestore.collection(event_name+"Posts").document(blogPostId);
+                                docref.update("total",currenttotal+rating-oldrating).addOnSuccessListener(new OnSuccessListener<Void>() {
+                                    @Override
+                                    public void onSuccess(Void aVoid) {
+
+
+                                    }
+                                })
+                                        .addOnFailureListener(new OnFailureListener() {
+                                            @Override
+                                            public void onFailure(@NonNull Exception e) {
+
+                                            }
+                                        });
+
+                            }
+
+
+
+
+
+                        }
+                    });
+                }
+            });
+
+*/
 
             holder.blogCommentBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -245,6 +338,8 @@ try {
 
         }
     }
+
+
 
 
     @Override
@@ -265,6 +360,7 @@ try {
 
         private ImageView blogLikeBtn;
         private TextView blogLikeCount;
+        private RatingBar blog_rating_bar;
 
         private ImageView blogCommentBtn;
 
@@ -275,6 +371,7 @@ try {
 
             blogLikeBtn = mView.findViewById(R.id.blog_like_btn);
             blogCommentBtn = mView.findViewById(R.id.blog_comment_icon);
+//            blog_rating_bar = mView.findViewById(R.id.blog_rating_bar);
 
         }
 
@@ -332,7 +429,7 @@ try {
         public void updateLikesCount(int count){
 
             blogLikeCount = mView.findViewById(R.id.blog_like_count);
-            String k=count + " Likes";
+            String k= "Likes: "+count;
             blogLikeCount.setText(k);
 
         }
@@ -357,6 +454,14 @@ try {
 
                         }
                     });
+
+
+        }
+
+        public void setRating(float rating) {
+
+
+            blog_rating_bar.setRating(rating);
 
 
         }

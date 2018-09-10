@@ -3,6 +3,8 @@ package com.example.android.simpleblog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -90,8 +92,10 @@ public class useraccount extends Fragment {
 
 
         mAuth = FirebaseAuth.getInstance();
-        current_user_id = mAuth.getCurrentUser().getUid();
+        if(mAuth.getCurrentUser()!=null){
 
+        current_user_id = mAuth.getCurrentUser().getUid();
+        }else{sendTologin();}
         firebaseFirestore = FirebaseFirestore.getInstance();
         storageReference = FirebaseStorage.getInstance().getReference();
 
@@ -112,17 +116,22 @@ public class useraccount extends Fragment {
             edit_button.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    Intent setupIntent = new Intent(getActivity(), SetupActivity.class);
-                    startActivity(setupIntent);
+                    if(isOnline()){
+                        Intent setupIntent = new Intent(getActivity(), SetupActivity.class);
+                        startActivity(setupIntent);
+                    }else{
+                        Toast.makeText(getActivity(), "Please check your internet connection", Toast.LENGTH_SHORT).show();
+                    }
+
                 }
             });
-            chat_button.setOnClickListener(new View.OnClickListener() {
+          /*  chat_button.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     Intent setupIntent = new Intent(getActivity(), Chat.class);
                     startActivity(setupIntent);
                 }
-            });
+            }); */
 
         }else{
 
@@ -469,5 +478,25 @@ public class useraccount extends Fragment {
 
 
     }
+
+    private void sendTologin() {
+
+        Intent loginIntent = new Intent(getActivity(), LoginActivity.class);
+        startActivity(loginIntent);
+    }
+
+    protected boolean isOnline() {
+        ConnectivityManager cm = (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo netInfo = cm.getActiveNetworkInfo();
+        if (netInfo != null && netInfo.isConnectedOrConnecting()) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+
+
+
 }
 
